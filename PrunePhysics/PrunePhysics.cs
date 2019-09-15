@@ -51,11 +51,29 @@ namespace PrunePhysics
 
 		public override void OnStart(StartState state)
 		{
-			loadWhiteList();
+			if (!HighLogic.LoadedSceneIsFlight)
+				return;
+
+			log(desc(part) + ".OnStart(" + state + ")");
 
 			base.OnStart(state);
+
+			loadWhiteList();
+
+			if (!origPhysSetup) {
+				origPhysSetup = true;
+				origPhys = part.PhysicsSignificance;
+				log(desc(part) + ".origPhys = " + origPhys + " (SETUP)");
+			}
+
 			prunePhysicsEvent = Events["PrunePhysics"];
 			forcePhysicsEvent = Events["ForcePhysics"];
+
+			if (origPhys == 1) {
+				log(desc(part) + ".origPhys = " + origPhys + " (START " + state + ")");
+				log(desc(part) + " losing " + this.ClassName);
+				Destroy(this);
+			}
 		}
 
 		public override void OnUpdate()
@@ -73,6 +91,12 @@ namespace PrunePhysics
 
 			// log(desc(part) + ": PrunePhysics.OnUpdate()");
 		}
+
+		[KSPField(isPersistant = true)]
+		public bool origPhysSetup = false;
+
+		[KSPField(isPersistant = true)]
+		public int origPhys;
 
 		[KSPEvent(guiActive = true, guiActiveEditor = false)]
 		public void DumpPartPhysics()

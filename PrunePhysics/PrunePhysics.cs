@@ -49,8 +49,12 @@ namespace PrunePhysics
 		private BaseEvent prunePhysicsEvent;
 		private BaseEvent forcePhysicsEvent;
 
+		private Part.PhysicalSignificance lastPhys = Part.PhysicalSignificance.FULL;
+
 		public override void OnStart(StartState state)
 		{
+			lastPhys = part.physicalSignificance;
+
 			if (!HighLogic.LoadedSceneIsFlight)
 				return;
 
@@ -79,6 +83,12 @@ namespace PrunePhysics
 		public override void OnUpdate()
 		{
 			base.OnUpdate();
+
+			if (part.physicalSignificance != lastPhys) {
+				log(desc(part) + ": " + lastPhys + " -> " + part.physicalSignificance
+					+ " in " + HighLogic.LoadedScene);
+				lastPhys = part.physicalSignificance;
+			}
 
 			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor)
 				return;

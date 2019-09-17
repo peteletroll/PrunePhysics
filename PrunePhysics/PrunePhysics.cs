@@ -51,8 +51,6 @@ namespace PrunePhysics
 		private BaseEvent prunePhysicsEvent;
 		private BaseEvent forcePhysicsEvent;
 
-		private Part.PhysicalSignificance lastPhys = Part.PhysicalSignificance.FULL;
-
 		[KSPField(isPersistant = true)]
 		public int PhysicsSignificanceOrig = UNKPHYSICS;
 
@@ -79,6 +77,8 @@ namespace PrunePhysics
 			forcePhysicsEvent = Events["ForcePhysics"];
 		}
 
+		private Part.PhysicalSignificance lastPhys = Part.PhysicalSignificance.FULL;
+
 		public override void OnUpdate()
 		{
 			base.OnUpdate();
@@ -100,9 +100,6 @@ namespace PrunePhysics
 
 			// log(desc(part) + ": PrunePhysics.OnUpdate()");
 		}
-
-		[KSPField(isPersistant = true)]
-		public bool origPhysSetup = false;
 
 		[KSPEvent(guiActive = true, guiActiveEditor = false)]
 		public void DumpPartPhysics()

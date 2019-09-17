@@ -13,6 +13,8 @@ namespace PrunePhysics
 
 		private readonly string[] COMMENT = { "//", "#" };
 
+		private const int UNKPHYSICS = -99999;
+
 		private void loadWhiteList()
 		{
 			if (whiteList != null)
@@ -51,9 +53,18 @@ namespace PrunePhysics
 
 		private Part.PhysicalSignificance lastPhys = Part.PhysicalSignificance.FULL;
 
+		[KSPField(isPersistant = true)]
+		public int PhysicsSignificanceOrig = UNKPHYSICS;
+
+		[KSPField(isPersistant = true)]
+		public int PhysicsSignificanceWanted = UNKPHYSICS;
+
 		public override void OnStart(StartState state)
 		{
-			lastPhys = part.physicalSignificance;
+			if (PhysicsSignificanceOrig == UNKPHYSICS) {
+				PhysicsSignificanceOrig = part.PhysicsSignificance;
+				log(desc(part) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig);
+			}
 
 			if (!HighLogic.LoadedSceneIsFlight)
 				return;
@@ -64,20 +75,8 @@ namespace PrunePhysics
 
 			loadWhiteList();
 
-			if (!origPhysSetup) {
-				origPhysSetup = true;
-				origPhys = part.PhysicsSignificance;
-				log(desc(part) + ".origPhys = " + origPhys + " (SETUP)");
-			}
-
 			prunePhysicsEvent = Events["PrunePhysics"];
 			forcePhysicsEvent = Events["ForcePhysics"];
-
-			if (origPhys == 1) {
-				log(desc(part) + ".origPhys = " + origPhys + " (START " + state + ")");
-				log(desc(part) + " losing " + this.ClassName);
-				Destroy(this);
-			}
 		}
 
 		public override void OnUpdate()
@@ -104,9 +103,6 @@ namespace PrunePhysics
 
 		[KSPField(isPersistant = true)]
 		public bool origPhysSetup = false;
-
-		[KSPField(isPersistant = true)]
-		public int origPhys;
 
 		[KSPEvent(guiActive = true, guiActiveEditor = false)]
 		public void DumpPartPhysics()

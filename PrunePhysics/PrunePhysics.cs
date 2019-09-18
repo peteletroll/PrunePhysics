@@ -60,7 +60,7 @@ namespace PrunePhysics
 		public override void OnStart(StartState state)
 		{
 			if (PhysicsSignificanceOrig == UNKPHYSICS) {
-				PhysicsSignificanceOrig = part.PhysicsSignificance;
+				PhysicsSignificanceOrig = PhysicsSignificanceWanted = part.PhysicsSignificance;
 				log(desc(part) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig);
 			}
 

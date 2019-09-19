@@ -61,13 +61,13 @@ namespace PrunePhysics
 		{
 			if (PhysicsSignificanceOrig == UNKPHYSICS) {
 				PhysicsSignificanceOrig = PhysicsSignificanceWanted = part.PhysicsSignificance;
-				log(desc(part, true) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig);
+				log(desc(part) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig);
 			}
 
 			if (!HighLogic.LoadedSceneIsFlight)
 				return;
 
-			log(desc(part) + ".OnStart(" + state + ")");
+			log(desc(part, true) + ".OnStart(" + state + ")");
 
 			base.OnStart(state);
 

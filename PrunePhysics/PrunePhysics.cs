@@ -240,7 +240,8 @@ namespace PrunePhysics
 			int s = name.IndexOf(' ');
 			if (s > 1)
 				name = name.Remove(s);
-			return "P:" + name + ":" + p.flightID + (withJoint ? "[" + desc(p.attachJoint) + "]" : "");
+			return "P:" + name + ":" + p.PhysicsSignificance + ":" + p.physicalSignificance
+				+ ":" + p.flightID + (withJoint ? "[" + desc(p.attachJoint) + "]" : "");
 		}
 
 		private static string desc(PartJoint j)

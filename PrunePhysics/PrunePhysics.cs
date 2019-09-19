@@ -75,6 +75,11 @@ namespace PrunePhysics
 
 			prunePhysicsEvent = Events["PrunePhysics"];
 			forcePhysicsEvent = Events["ForcePhysics"];
+
+			if (part.PhysicsSignificance > 0 != PhysicsSignificanceWanted > 0) {
+				log(desc(part, true) + ": should change PhysicsSignificance "
+					+ part.PhysicsSignificance + " -> " + PhysicsSignificanceWanted);
+			}
 		}
 
 		private Part.PhysicalSignificance lastPhys = Part.PhysicalSignificance.FULL;
@@ -92,9 +97,15 @@ namespace PrunePhysics
 			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor)
 				return;
 
+			if (part.physicalSignificance == Part.PhysicalSignificance.NONE && part.PhysicsSignificance != 1) {
+				log(desc(part, true) + ": fixing PhysicsSignificance "
+					+ part.PhysicsSignificance + " -> 1");
+				part.PhysicsSignificance = 1;
+			}
+
 			bool hp = hasPhysics(part);
 			if (prunePhysicsEvent != null)
-				prunePhysicsEvent.guiActive = hp;
+				prunePhysicsEvent.guiActive = hp && part.PhysicsSignificance <= 0;
 			if (forcePhysicsEvent != null)
 				forcePhysicsEvent.guiActive = !hp;
 
@@ -183,15 +194,16 @@ namespace PrunePhysics
 
 		public static bool prunePhysics(Part part)
 		{
-			if (!part || !hasPhysics(part))
+			log(desc(part, true) + ".prunePhysics()");
+			if (part.PhysicsSignificance > 0)
 				return false;
-
-			log(desc(part) + ": prunePhysics() unsupported yet");
-			return false;
+			part.PhysicsSignificance = 1;
+			return true;
 		}
 
 		public static bool forcePhysics(Part part)
 		{
+			part.PhysicsSignificance = 0;
 			if (!part || hasPhysics(part))
 				return false;
 

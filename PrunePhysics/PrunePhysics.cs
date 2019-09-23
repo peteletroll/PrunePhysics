@@ -61,7 +61,8 @@ namespace PrunePhysics
 		{
 			if (PhysicsSignificanceOrig == UNKPHYSICS) {
 				PhysicsSignificanceOrig = PhysicsSignificanceWanted = part.PhysicsSignificance;
-				log(desc(part, true) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig);
+				log(desc(part, true) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig
+					+ " at state " + state);
 			}
 
 			if (!HighLogic.LoadedSceneIsFlight)
@@ -240,7 +241,8 @@ namespace PrunePhysics
 			int s = name.IndexOf(' ');
 			if (s > 1)
 				name = name.Remove(s);
-			return "P:" + name + ":" + p.flightID + (withJoint ? "[" + desc(p.attachJoint) + "]" : "");
+			return "P:" + name + ":" + p.PhysicsSignificance + ":" + p.flightID
+				+ (withJoint ? "[" + desc(p.attachJoint) + "]" : "");
 		}
 
 		private static string desc(PartJoint j)

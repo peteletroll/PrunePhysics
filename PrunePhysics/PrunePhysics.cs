@@ -133,6 +133,14 @@ namespace PrunePhysics
 			// log(desc(part) + ": PrunePhysics.OnUpdate()");
 		}
 
+#if DEBUG
+		[KSPEvent(guiActive = true, guiActiveEditor = false)]
+		public void ResetWhiteList()
+		{
+			whiteList = null;
+		}
+#endif
+
 		[KSPEvent(guiActive = true, guiActiveEditor = false)]
 		public void DumpPartPhysics()
 		{

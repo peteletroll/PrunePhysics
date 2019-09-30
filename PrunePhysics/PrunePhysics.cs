@@ -33,6 +33,10 @@ namespace PrunePhysics
 					string l = ll[0].Trim();
 					if (l == "")
 						continue;
+					if (l[0] != '^')
+						l = "^" + l;
+					if (l[l.Length - 1] != '$')
+						l = l + "$";
 					log("REGEX " + l);
 					Regex re = null;
 					try {

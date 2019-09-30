@@ -48,6 +48,22 @@ namespace PrunePhysics
 			whiteList = wl.ToArray();
 		}
 
+		private bool isInWhiteList(string name)
+		{
+			loadWhiteList();
+			int p = name.LastIndexOf('.');
+			if (p > 0)
+				name = name.Remove(p);
+			for (int i = 0; i < whiteList.Length; i++) {
+				Regex re = whiteList[i];
+				if (re == null)
+					continue;
+				if (re.IsMatch(name))
+					return true;
+			}
+			return false;
+		}
+
 		private BaseEvent prunePhysicsEvent;
 		private BaseEvent forcePhysicsEvent;
 
@@ -143,7 +159,10 @@ namespace PrunePhysics
 					if (part.gameObject) {
 						Component[] mb = part.gameObject.GetComponents<Component>();
 						for (int i = 0; i < mb.Length; i++)
-							log("COMP [" + i + "] " + mb[i].GetInstanceID() + " " + desc(mb[i].GetType()));
+							log("COMP [" + i + "] " + mb[i].GetInstanceID()
+								+ " " + desc(mb[i].GetType())
+								+ " \"" + mb[i].name + "\""
+								+ " " + isInWhiteList(mb[i].name));
 					} else {
 						log("no gameObject");
 					}

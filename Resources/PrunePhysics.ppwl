@@ -1,7 +1,20 @@
+// whitelist from Stock + MH DLC + BG DLC
 
-# comment
-// comment
-re1
-re2 # comment
-re3 // comment
+CModuleFuelLine
+CModuleLinkedMesh
+CModuleStrut
+FXModuleAnimateRCS
+FXModuleAnimateThrottle
+ModuleDataTransmitter
+ModuleDeployableAntenna
+ModuleDeployableSolarPanel
+ModuleEnginesFX
+ModuleEnviroSensor
+ModuleGimbal
+ModuleLight
+ModulePartVariants
+ModuleRCSFX
+ModuleRoboticController
+ModuleScienceExperiment
+RetractableLadder
 

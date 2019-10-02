@@ -68,8 +68,12 @@ namespace PrunePhysics
 			return false;
 		}
 
+		private BaseField prunePhysicsStatusField;
 		private BaseEvent prunePhysicsEvent;
 		private BaseEvent forcePhysicsEvent;
+
+		[KSPField(guiActive = false, guiActiveEditor = false)]
+		public string PrunePhysicsStatus = "";
 
 		[KSPField(isPersistant = true)]
 		public int PhysicsSignificanceOrig = UNKPHYSICS;
@@ -79,6 +83,8 @@ namespace PrunePhysics
 
 		public static bool wantsPhysics(int physSign)
 		{
+			if (physSign == UNKPHYSICS)
+				log("*** WARNING *** wantsPhysics(UNKPHYSICS)");
 			return physSign <= 0;
 		}
 
@@ -99,6 +105,7 @@ namespace PrunePhysics
 
 			loadWhiteList();
 
+			prunePhysicsStatusField = Fields["PrunePhysicsStatus"];
 			prunePhysicsEvent = Events["PrunePhysics"];
 			forcePhysicsEvent = Events["ForcePhysics"];
 
@@ -124,6 +131,17 @@ namespace PrunePhysics
 				return;
 
 			bool hp = hasPhysics(part);
+
+			if (wantsPhysics(part.PhysicsSignificance) != wantsPhysics(PhysicsSignificanceWanted)) {
+				PrunePhysicsStatus = hp ?
+					"Losing Physics" :
+					"Getting Physics";
+			} else {
+				PrunePhysicsStatus = "";
+			}
+
+			if (prunePhysicsStatusField != null)
+				prunePhysicsStatusField.guiActive = prunePhysicsStatusField.guiActiveEditor = PrunePhysicsStatus != "";
 			if (prunePhysicsEvent != null)
 				prunePhysicsEvent.guiActive = hp && wantsPhysics(part.PhysicsSignificance);
 			if (forcePhysicsEvent != null)
@@ -214,13 +232,7 @@ namespace PrunePhysics
 		{
 			if (!part)
 				return false;
-			bool ret = (part.physicalSignificance == Part.PhysicalSignificance.FULL);
-			if (HighLogic.LoadedSceneIsFlight && ret != part.rb) {
-				log(desc(part) + ": hasPhysics() Rigidbody incoherency: "
-					+ part.physicalSignificance + ", " + (part.rb ? "rb ok" : "rb null"));
-				ret = part.rb;
-			}
-			return ret;
+			return part.physicalSignificance == Part.PhysicalSignificance.FULL;
 		}
 
 		public static bool prunePhysics(Part part)

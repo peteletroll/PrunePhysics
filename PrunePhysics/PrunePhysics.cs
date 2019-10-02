@@ -77,6 +77,11 @@ namespace PrunePhysics
 		[KSPField(isPersistant = true)]
 		public int PhysicsSignificanceWanted = UNKPHYSICS;
 
+		public static bool wantsPhysics(int physSign)
+		{
+			return physSign <= 0;
+		}
+
 		public override void OnStart(StartState state)
 		{
 			if (PhysicsSignificanceOrig == UNKPHYSICS) {
@@ -97,7 +102,7 @@ namespace PrunePhysics
 			prunePhysicsEvent = Events["PrunePhysics"];
 			forcePhysicsEvent = Events["ForcePhysics"];
 
-			if (part.PhysicsSignificance > 0 != PhysicsSignificanceWanted > 0) {
+			if (wantsPhysics(part.PhysicsSignificance) != wantsPhysics(PhysicsSignificanceWanted)) {
 				log(desc(part, true) + ": should change PhysicsSignificance "
 					+ part.PhysicsSignificance + " -> " + PhysicsSignificanceWanted);
 			}
@@ -110,7 +115,7 @@ namespace PrunePhysics
 			base.OnUpdate();
 
 			if (part.physicalSignificance != lastPhys) {
-				log(desc(part) + ": " + lastPhys + " -> " + part.physicalSignificance
+				log(desc(part, true) + ": " + lastPhys + " -> " + part.physicalSignificance
 					+ " in " + HighLogic.LoadedScene);
 				lastPhys = part.physicalSignificance;
 			}
@@ -118,15 +123,9 @@ namespace PrunePhysics
 			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor)
 				return;
 
-			if (part.physicalSignificance == Part.PhysicalSignificance.NONE && part.PhysicsSignificance != 1) {
-				log(desc(part, true) + ": fixing PhysicsSignificance "
-					+ part.PhysicsSignificance + " -> 1");
-				part.PhysicsSignificance = 1;
-			}
-
 			bool hp = hasPhysics(part);
 			if (prunePhysicsEvent != null)
-				prunePhysicsEvent.guiActive = hp && part.PhysicsSignificance <= 0;
+				prunePhysicsEvent.guiActive = hp && wantsPhysics(part.PhysicsSignificance);
 			if (forcePhysicsEvent != null)
 				forcePhysicsEvent.guiActive = !hp;
 
@@ -227,7 +226,7 @@ namespace PrunePhysics
 		public static bool prunePhysics(Part part)
 		{
 			log(desc(part, true) + ".prunePhysics()");
-			if (part.PhysicsSignificance > 0)
+			if (!wantsPhysics(part.PhysicsSignificance))
 				return false;
 			part.PhysicsSignificance = 1;
 			return true;

@@ -52,7 +52,7 @@ namespace PrunePhysics
 			whiteList = wl.ToArray();
 		}
 
-		private bool isInWhiteList(string name)
+		private bool isInWhiteList(string name, bool verbose)
 		{
 			loadWhiteList();
 			int p = name.LastIndexOf('.');
@@ -65,6 +65,8 @@ namespace PrunePhysics
 				if (re.IsMatch(name))
 					return true;
 			}
+			if (verbose)
+				log("name \"" + name + " is not in whitelist");
 			return false;
 		}
 
@@ -191,7 +193,7 @@ namespace PrunePhysics
 							log("COMP [" + i + "] " + mb[i].GetInstanceID()
 								+ " " + desc(mb[i].GetType())
 								+ " \"" + mb[i].name + "\""
-								+ " " + isInWhiteList(mb[i].name));
+								+ " " + isInWhiteList(mb[i].name, false));
 					} else {
 						log("no gameObject");
 					}

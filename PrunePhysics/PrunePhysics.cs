@@ -98,6 +98,9 @@ namespace PrunePhysics
 					+ " at state " + state);
 			}
 
+			if (PhysicsSignificanceWanted == UNKPHYSICS)
+				PhysicsSignificanceWanted = part.PhysicsSignificance;
+
 			if (!HighLogic.LoadedSceneIsFlight)
 				return;
 

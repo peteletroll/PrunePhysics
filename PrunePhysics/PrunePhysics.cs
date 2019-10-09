@@ -92,6 +92,8 @@ namespace PrunePhysics
 
 		public override void OnStart(StartState state)
 		{
+			base.OnStart(state);
+
 			if (PhysicsSignificanceOrig == UNKPHYSICS) {
 				PhysicsSignificanceOrig = PhysicsSignificanceWanted = part.PhysicsSignificance;
 				log(desc(part, true) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig
@@ -105,8 +107,6 @@ namespace PrunePhysics
 				return;
 
 			log(desc(part, true) + ".OnStart(" + state + ")");
-
-			base.OnStart(state);
 
 			loadWhiteList();
 
@@ -126,14 +126,14 @@ namespace PrunePhysics
 		{
 			base.OnUpdate();
 
+			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor)
+				return;
+
 			if (part.physicalSignificance != lastPhys) {
 				log(desc(part, true) + ": " + lastPhys + " -> " + part.physicalSignificance
 					+ " in " + HighLogic.LoadedScene);
 				lastPhys = part.physicalSignificance;
 			}
-
-			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor)
-				return;
 
 			bool hp = hasPhysics(part);
 

@@ -46,6 +46,6 @@ Global
 		$3.NewLineForMembersInObjectInit = False
 		$3.NewLineForMembersInAnonymousTypes = False
 		$3.NewLineForClausesInQuery = False
-		StartupItem = DockRotate\DockRotate.csproj
+		StartupItem = PrunePhysics\PrunePhysics.csproj
 	EndGlobalSection
 EndGlobal

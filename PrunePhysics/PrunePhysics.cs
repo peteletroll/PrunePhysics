@@ -95,13 +95,13 @@ namespace PrunePhysics
 			base.OnStart(state);
 
 			if (PhysicsSignificanceOrig == UNKPHYSICS) {
-				PhysicsSignificanceOrig = PhysicsSignificanceWanted = part.PhysicsSignificance;
+				PhysicsSignificanceOrig = part.PhysicsSignificance;
 				log(desc(part, true) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig
 					+ " at state " + state);
 			}
 
 			if (PhysicsSignificanceWanted == UNKPHYSICS)
-				PhysicsSignificanceWanted = part.PhysicsSignificance;
+				PhysicsSignificanceWanted = PhysicsSignificanceOrig;
 
 			if (!HighLogic.LoadedSceneIsFlight)
 				return;
@@ -308,7 +308,8 @@ namespace PrunePhysics
 		{
 			if (!j)
 				return "J:null";
-			return "J:" + j.GetInstanceID() + "[" + desc(j.Host) + ">" + desc(j.Target) + "]";
+			string m = j.joints.Count == 1 ? "" : "[" + j.joints.Count + "]";
+			return "J:" + j.GetInstanceID() + m + "[" + desc(j.Host) + ">" + desc(j.Target) + "]";
 		}
 
 		private static string desc(DragCube c)

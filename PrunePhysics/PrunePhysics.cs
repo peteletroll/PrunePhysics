@@ -116,9 +116,9 @@ namespace PrunePhysics
 
 			loadWhiteList();
 
-			prunePhysicsStatusField = Fields["PrunePhysicsStatus"];
-			prunePhysicsEvent = Events["PrunePhysics"];
-			forcePhysicsEvent = Events["ForcePhysics"];
+			prunePhysicsStatusField = Fields[nameof(PrunePhysicsStatus)];
+			prunePhysicsEvent = Events[nameof(PrunePhysics)];
+			forcePhysicsEvent = Events[nameof(ForcePhysics)];
 
 			if (wantsPhysics(part.PhysicsSignificance) != wantsPhysics(PhysicsSignificanceWanted)) {
 				log(desc(part, true) + ": should change PhysicsSignificance "
@@ -137,7 +137,7 @@ namespace PrunePhysics
 
 			if (DoPrunePhysics != prevDoPrunePhysics) {
 				prevDoPrunePhysics = DoPrunePhysics;
-				OnPrunePhysicsChange();
+				AfterPrunePhysicsChange();
 			}
 
 			if (part.physicalSignificance != lastPhys) {
@@ -166,7 +166,7 @@ namespace PrunePhysics
 			// log(desc(part) + ": PrunePhysics.OnUpdate()");
 		}
 
-		private void OnPrunePhysicsChange() {
+		private void AfterPrunePhysicsChange() {
 			log(desc(part) + ".PrunePhysics is now " + DoPrunePhysics);
 			int newPhysicsSignificance = DoPrunePhysics ? 1 : 0;
 			if (!part)

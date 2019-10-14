@@ -11,7 +11,7 @@ namespace PrunePhysics
 	{
 		private static Regex[] whiteList = null;
 
-		private readonly string[] COMMENT = { "//", "#" };
+		private static readonly string[] COMMENT = { "//", "#" };
 
 		private const int UNKPHYSICS = -99999;
 
@@ -97,8 +97,6 @@ namespace PrunePhysics
 				return;
 
 			log(desc(part, true) + ".OnStart(" + state + ")");
-
-			loadWhiteList();
 
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
 		}

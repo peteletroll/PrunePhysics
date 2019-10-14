@@ -74,6 +74,10 @@ namespace PrunePhysics
 		private BaseEvent prunePhysicsEvent;
 		private BaseEvent forcePhysicsEvent;
 
+		[KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true)]
+		public bool DoPrunePhysics = false;
+		private bool prevDoPrunePhysics = false;
+
 		[KSPField(guiActive = false, guiActiveEditor = false)]
 		public string PrunePhysicsStatus = "";
 
@@ -93,6 +97,8 @@ namespace PrunePhysics
 		public override void OnStart(StartState state)
 		{
 			base.OnStart(state);
+
+			prevDoPrunePhysics = DoPrunePhysics;
 
 			if (PhysicsSignificanceOrig == UNKPHYSICS) {
 				PhysicsSignificanceOrig = part.PhysicsSignificance;
@@ -129,6 +135,11 @@ namespace PrunePhysics
 			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor)
 				return;
 
+			if (DoPrunePhysics != prevDoPrunePhysics) {
+				prevDoPrunePhysics = DoPrunePhysics;
+				OnPrunePhysicsChange();
+			}
+
 			if (part.physicalSignificance != lastPhys) {
 				log(desc(part, true) + ": " + lastPhys + " -> " + part.physicalSignificance
 					+ " in " + HighLogic.LoadedScene);
@@ -153,6 +164,28 @@ namespace PrunePhysics
 				forcePhysicsEvent.guiActive = !hp;
 
 			// log(desc(part) + ": PrunePhysics.OnUpdate()");
+		}
+
+		private void OnPrunePhysicsChange() {
+			log(desc(part) + ".PrunePhysics is now " + DoPrunePhysics);
+			int newPhysicsSignificance = DoPrunePhysics ? 1 : 0;
+			if (!part)
+				return;
+			changePhysics(part, newPhysicsSignificance);
+			List<Part> scp = part.symmetryCounterparts;
+			if (scp != null)
+				for (int i = 0; i < scp.Count; i++)
+					changePhysics(scp[i], newPhysicsSignificance);
+		}
+
+		private static void changePhysics(Part p, int newPhysicsSignificance)
+		{
+			if (!p)
+				return;
+			if (newPhysicsSignificance != p.PhysicsSignificance) {
+				log(desc(p) + ".PhysicsSignificance " + p.PhysicsSignificance + " -> " + newPhysicsSignificance);
+				p.PhysicsSignificance = newPhysicsSignificance;
+			}
 		}
 
 #if DEBUG

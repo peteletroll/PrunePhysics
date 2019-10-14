@@ -52,6 +52,32 @@ namespace PrunePhysics
 			whiteList = wl.ToArray();
 		}
 
+		private bool checkWhiteList()
+		{
+			if (!part.gameObject)
+				return false;
+
+			List<PartModule> pm = part.FindModulesImplementing<PartModule>();
+			if (pm == null)
+				return true;
+
+			for (int i = 0; i < pm.Count; i++) {
+				if (!isInWhiteList(pm[i], false)) {
+					log(desc(part) + ": " + pm[i].name + " not in white list");
+					return false;
+				}
+			}
+
+			return true;
+		}
+
+		private bool isInWhiteList(Component c, bool verbose)
+		{
+			if (c == null)
+				return true;
+			return isInWhiteList(c.GetType().ToString(), verbose);
+		}
+
 		private bool isInWhiteList(string name, bool verbose)
 		{
 			loadWhiteList();
@@ -73,6 +99,7 @@ namespace PrunePhysics
 		[KSPField(isPersistant = true)]
 		public int PhysicsSignificanceOrig = UNKPHYSICS;
 
+		[UI_Toggle()]
 		[KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true)]
 		public bool PrunePhysics = false;
 		private BaseField PrunePhysicsField = null;
@@ -99,6 +126,9 @@ namespace PrunePhysics
 			log(desc(part, true) + ".OnStart(" + state + ")");
 
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
+
+			if (PhysicsSignificanceOrig > 0 || !checkWhiteList())
+				PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = false;
 		}
 
 		public override void OnUpdate()
@@ -189,11 +219,12 @@ namespace PrunePhysics
 					}
 					if (part.gameObject) {
 						Component[] mb = part.gameObject.GetComponents<Component>();
-						for (int i = 0; i < mb.Length; i++)
+						for (int i = 0; i < mb.Length; i++) {
+							bool isMod = (mb[i] is PartModule);
 							log("COMP [" + i + "] " + mb[i].GetInstanceID()
 								+ " " + desc(mb[i].GetType())
-								+ " \"" + mb[i].name + "\""
-								+ " " + isInWhiteList(mb[i].name, false));
+								+ " " + (isMod ? isInWhiteList(mb[i], false).ToString() : "CMP"));
+						}
 					} else {
 						log("no gameObject");
 					}

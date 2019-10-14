@@ -77,6 +77,7 @@ namespace PrunePhysics
 		[KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true)]
 		public bool DoPrunePhysics = false;
 		private bool prevDoPrunePhysics = false;
+		BaseField doPrunePhysicsField = null;
 
 		[KSPField(guiActive = false, guiActiveEditor = false)]
 		public string PrunePhysicsStatus = "";
@@ -116,6 +117,7 @@ namespace PrunePhysics
 
 			loadWhiteList();
 
+			doPrunePhysicsField = Fields[nameof(DoPrunePhysics)];
 			prunePhysicsStatusField = Fields[nameof(PrunePhysicsStatus)];
 			prunePhysicsEvent = Events[nameof(PrunePhysics)];
 			forcePhysicsEvent = Events[nameof(ForcePhysics)];

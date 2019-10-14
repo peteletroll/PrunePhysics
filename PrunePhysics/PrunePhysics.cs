@@ -70,45 +70,28 @@ namespace PrunePhysics
 			return false;
 		}
 
-		private BaseField prunePhysicsStatusField;
-		private BaseEvent prunePhysicsEvent;
-		private BaseEvent forcePhysicsEvent;
-
-		[KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true)]
-		public bool DoPrunePhysics = false;
-		private bool prevDoPrunePhysics = false;
-		BaseField doPrunePhysicsField = null;
-
-		[KSPField(guiActive = false, guiActiveEditor = false)]
-		public string PrunePhysicsStatus = "";
-
 		[KSPField(isPersistant = true)]
 		public int PhysicsSignificanceOrig = UNKPHYSICS;
 
-		[KSPField(isPersistant = true)]
-		public int PhysicsSignificanceWanted = UNKPHYSICS;
+		[KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true)]
+		public bool PrunePhysics = false;
+		private BaseField PrunePhysicsField = null;
+		private bool prevPrunePhysics = false;
 
-		public static bool wantsPhysics(int physSign)
-		{
-			if (physSign == UNKPHYSICS)
-				log("*** WARNING *** wantsPhysics(UNKPHYSICS)");
-			return physSign <= 0;
-		}
+		private Part.PhysicalSignificance prevPhysicalSignificance = Part.PhysicalSignificance.FULL;
 
 		public override void OnStart(StartState state)
 		{
 			base.OnStart(state);
 
-			prevDoPrunePhysics = DoPrunePhysics;
+			prevPhysicalSignificance = part.physicalSignificance;
+			prevPrunePhysics = PrunePhysics;
 
 			if (PhysicsSignificanceOrig == UNKPHYSICS) {
 				PhysicsSignificanceOrig = part.PhysicsSignificance;
 				log(desc(part, true) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig
 					+ " at state " + state);
 			}
-
-			if (PhysicsSignificanceWanted == UNKPHYSICS)
-				PhysicsSignificanceWanted = PhysicsSignificanceOrig;
 
 			if (!HighLogic.LoadedSceneIsFlight)
 				return;
@@ -117,18 +100,8 @@ namespace PrunePhysics
 
 			loadWhiteList();
 
-			doPrunePhysicsField = Fields[nameof(DoPrunePhysics)];
-			prunePhysicsStatusField = Fields[nameof(PrunePhysicsStatus)];
-			prunePhysicsEvent = Events[nameof(PrunePhysics)];
-			forcePhysicsEvent = Events[nameof(ForcePhysics)];
-
-			if (wantsPhysics(part.PhysicsSignificance) != wantsPhysics(PhysicsSignificanceWanted)) {
-				log(desc(part, true) + ": should change PhysicsSignificance "
-					+ part.PhysicsSignificance + " -> " + PhysicsSignificanceWanted);
-			}
+			PrunePhysicsField = Fields[nameof(PrunePhysics)];
 		}
-
-		private Part.PhysicalSignificance lastPhys = Part.PhysicalSignificance.FULL;
 
 		public override void OnUpdate()
 		{
@@ -137,40 +110,30 @@ namespace PrunePhysics
 			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor)
 				return;
 
-			if (DoPrunePhysics != prevDoPrunePhysics) {
-				prevDoPrunePhysics = DoPrunePhysics;
+			if (PrunePhysics != prevPrunePhysics) {
+				prevPrunePhysics = PrunePhysics;
 				AfterPrunePhysicsChange();
 			}
 
-			if (part.physicalSignificance != lastPhys) {
-				log(desc(part, true) + ": " + lastPhys + " -> " + part.physicalSignificance
+			if (part.physicalSignificance != prevPhysicalSignificance) {
+				log(desc(part, true) + ": " + prevPhysicalSignificance + " -> " + part.physicalSignificance
 					+ " in " + HighLogic.LoadedScene);
-				lastPhys = part.physicalSignificance;
+				prevPhysicalSignificance = part.physicalSignificance;
 			}
 
-			bool hp = hasPhysics(part);
-
-			if (wantsPhysics(part.PhysicsSignificance) != wantsPhysics(PhysicsSignificanceWanted)) {
-				PrunePhysicsStatus = hp ?
-					"Losing Physics" :
-					"Getting Physics";
-			} else {
-				PrunePhysicsStatus = "";
+			if (PrunePhysicsField != null) {
+				bool wantedPhysics = !PrunePhysics;
+				bool actualPhysics = part.physicalSignificance == Part.PhysicalSignificance.FULL;
+				PrunePhysicsField.guiName = nameof(PrunePhysics)
+					+ (wantedPhysics != actualPhysics ? " (WAIT)" : "");
 			}
-
-			if (prunePhysicsStatusField != null)
-				prunePhysicsStatusField.guiActive = prunePhysicsStatusField.guiActiveEditor = PrunePhysicsStatus != "";
-			if (prunePhysicsEvent != null)
-				prunePhysicsEvent.guiActive = hp && wantsPhysics(part.PhysicsSignificance);
-			if (forcePhysicsEvent != null)
-				forcePhysicsEvent.guiActive = !hp;
 
 			// log(desc(part) + ": PrunePhysics.OnUpdate()");
 		}
 
 		private void AfterPrunePhysicsChange() {
-			log(desc(part) + ".PrunePhysics is now " + DoPrunePhysics);
-			int newPhysicsSignificance = DoPrunePhysics ? 1 : 0;
+			log(desc(part) + ".PrunePhysics is now " + PrunePhysics);
+			int newPhysicsSignificance = PrunePhysics ? 1 : 0;
 			if (!part)
 				return;
 			changePhysics(part, newPhysicsSignificance);
@@ -198,6 +161,7 @@ namespace PrunePhysics
 		}
 #endif
 
+#if DEBUG
 		[KSPEvent(guiActive = true, guiActiveEditor = false)]
 		public void DumpPartPhysics()
 		{
@@ -243,73 +207,7 @@ namespace PrunePhysics
 			}
 			log(sep + " " + desc(part) + " END " + sep);
 		}
-
-		[KSPEvent(guiActive = true, guiActiveEditor = false)]
-		public void PrunePhysics()
-		{
-			if (!part)
-				return;
-			prunePhysics(part);
-			List<Part> scp = part.symmetryCounterparts;
-			if (scp != null)
-				for (int i = 0; i < scp.Count; i++)
-					prunePhysics(scp[i]);
-		}
-
-		[KSPEvent(guiActive = true, guiActiveEditor = false)]
-		public void ForcePhysics()
-		{
-			if (!part)
-				return;
-			forcePhysics(part);
-			List<Part> scp = part.symmetryCounterparts;
-			if (scp != null)
-				for (int i = 0; i < scp.Count; i++)
-					forcePhysics(scp[i]);
-		}
-
-		public static bool hasPhysics(Part part)
-		{
-			if (!part)
-				return false;
-			return part.physicalSignificance == Part.PhysicalSignificance.FULL;
-		}
-
-		public static bool prunePhysics(Part part)
-		{
-			log(desc(part, true) + ".prunePhysics()");
-			if (!wantsPhysics(part.PhysicsSignificance))
-				return false;
-			part.PhysicsSignificance = 1;
-			return true;
-		}
-
-		public static bool forcePhysics(Part part)
-		{
-			part.PhysicsSignificance = 0;
-			if (!part || hasPhysics(part))
-				return false;
-
-			log(desc(part) + ": calling PromoteToPhysicalPart(), "
-				+ part.physicalSignificance + ", " + part.PhysicsSignificance);
-			part.PromoteToPhysicalPart();
-			log(desc(part) + ": called PromoteToPhysicalPart(), "
-				+ part.physicalSignificance + ", " + part.PhysicsSignificance);
-			if (part.parent) {
-				if (part.attachJoint) {
-					log(desc(part) + ": parent joint exists already: " + desc(part.attachJoint));
-				} else {
-					AttachNode nodeHere = part.FindAttachNodeByPart(part.parent);
-					AttachNode nodeParent = part.parent.FindAttachNodeByPart(part);
-					AttachModes m = (nodeHere != null && nodeParent != null) ?
-						AttachModes.STACK : AttachModes.SRF_ATTACH;
-					part.CreateAttachJoint(m);
-					log(desc(part) + ": created joint " + m + " " + desc(part.attachJoint));
-				}
-			}
-
-			return true;
-		}
+#endif
 
 		private static string desc(Type t)
 		{

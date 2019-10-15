@@ -127,8 +127,12 @@ namespace PrunePhysics
 
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
 
-			if (PhysicsSignificanceOrig > 0 || !checkWhiteList())
+			if (PhysicsSignificanceOrig > 0 || !checkWhiteList()) {
 				PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = false;
+#if !DEBUG
+				enabled = false;
+#endif
+			}
 		}
 
 		public override void OnUpdate()
@@ -186,6 +190,7 @@ namespace PrunePhysics
 		public void ResetWhiteList()
 		{
 			whiteList = null;
+			loadWhiteList();
 		}
 #endif
 

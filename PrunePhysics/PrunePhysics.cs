@@ -57,13 +57,14 @@ namespace PrunePhysics
 			if (!part.gameObject)
 				return false;
 
-			List<PartModule> pm = part.FindModulesImplementing<PartModule>();
-			if (pm == null)
+			List<PartModule> pms = part.FindModulesImplementing<PartModule>();
+			if (pms == null)
 				return true;
 
-			for (int i = 0; i < pm.Count; i++) {
-				if (!isInWhiteList(pm[i], false)) {
-					log(desc(part) + ": " + pm[i].name + " not in white list");
+			for (int i = 0; i < pms.Count; i++) {
+				PartModule pm = pms[i];
+				if (!isInWhiteList(pm, false)) {
+					log(desc(part) + ": " + pm.GetType() + " not in white list");
 					return false;
 				}
 			}
@@ -142,6 +143,21 @@ namespace PrunePhysics
 			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor)
 				return;
 
+			if (PrunePhysicsField != null) {
+				bool wantedPhysics = !PrunePhysics;
+				bool actualPhysics = part.physicalSignificance == Part.PhysicalSignificance.FULL;
+				PrunePhysicsField.guiName = nameof(PrunePhysics)
+					+ (wantedPhysics != actualPhysics ? " (WAIT)" : "");
+			}
+
+			// log(desc(part) + ": PrunePhysics.OnUpdate()");
+		}
+
+		public void FixedUpdate()
+		{
+			if (HighLogic.LoadedSceneIsEditor)
+				return;
+
 			if (PrunePhysics != prevPrunePhysics) {
 				prevPrunePhysics = PrunePhysics;
 				AfterPrunePhysicsChange();
@@ -152,15 +168,6 @@ namespace PrunePhysics
 					+ " in " + HighLogic.LoadedScene);
 				prevPhysicalSignificance = part.physicalSignificance;
 			}
-
-			if (PrunePhysicsField != null) {
-				bool wantedPhysics = !PrunePhysics;
-				bool actualPhysics = part.physicalSignificance == Part.PhysicalSignificance.FULL;
-				PrunePhysicsField.guiName = nameof(PrunePhysics)
-					+ (wantedPhysics != actualPhysics ? " (WAIT)" : "");
-			}
-
-			// log(desc(part) + ": PrunePhysics.OnUpdate()");
 		}
 
 		private void AfterPrunePhysicsChange() {

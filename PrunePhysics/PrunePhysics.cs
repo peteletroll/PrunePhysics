@@ -63,8 +63,8 @@ namespace PrunePhysics
 
 			for (int i = 0; i < pms.Count; i++) {
 				PartModule pm = pms[i];
-				if (!isInWhiteList(pm, false)) {
-					log(desc(part) + ": " + pm.GetType() + " not in white list");
+				if (!isInWhiteList(pm, true)) {
+					log(desc(part) + ": " + pm.GetType() + " not in whitelist");
 					return false;
 				}
 			}
@@ -84,7 +84,7 @@ namespace PrunePhysics
 			loadWhiteList();
 			int p = name.LastIndexOf('.');
 			if (p > 0)
-				name = name.Remove(p);
+				name = name.Remove(0, p + 1);
 			for (int i = 0; i < whiteList.Length; i++) {
 				Regex re = whiteList[i];
 				if (re == null)
@@ -93,7 +93,7 @@ namespace PrunePhysics
 					return true;
 			}
 			if (verbose)
-				log("name \"" + name + " is not in whitelist");
+				log("name \"" + name + "\" is not in whitelist");
 			return false;
 		}
 

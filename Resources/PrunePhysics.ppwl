@@ -1,3 +1,7 @@
+// ModulePrunePhysics must be whitelisted, of course
+
+ModulePrunePhysics
+
 // whitelist from Stock + MH DLC + BG DLC
 // These are the modules in Stock/DLC physicsless parts
 

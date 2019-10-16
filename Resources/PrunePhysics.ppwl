@@ -23,3 +23,7 @@ ModuleRoboticController
 ModuleScienceExperiment
 RetractableLadder
 
+// IndicatorLights
+ModuleResource.*Indicator
+ModuleControllableEmissive
+

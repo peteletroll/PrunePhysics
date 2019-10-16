@@ -145,9 +145,13 @@ namespace PrunePhysics
 
 			if (PrunePhysicsField != null) {
 				bool wantedPhysics = !PrunePhysics;
-				bool actualPhysics = part.physicalSignificance == Part.PhysicalSignificance.FULL;
-				PrunePhysicsField.guiName = nameof(PrunePhysics)
+				bool actualPhysics = (part.physicalSignificance == Part.PhysicalSignificance.FULL);
+				string newGuiName = nameof(PrunePhysics)
 					+ (wantedPhysics != actualPhysics ? " (WAIT)" : "");
+				if (PrunePhysicsField.guiName != newGuiName) {
+					log(desc(part) + ": guiName \"" + PrunePhysicsField.guiName + "\" -> \"" + newGuiName + "\"");
+					PrunePhysicsField.guiName = newGuiName;
+				}
 			}
 
 			// log(desc(part) + ": PrunePhysics.OnUpdate()");

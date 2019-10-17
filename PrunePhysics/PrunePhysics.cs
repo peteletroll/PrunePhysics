@@ -128,7 +128,7 @@ namespace PrunePhysics
 
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
 
-			if (PhysicsSignificanceOrig > 0 || !checkWhiteList()) {
+			if (PhysicsSignificanceOrig > 0 || !checkWhiteList() || !part.parent) {
 				PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = false;
 #if !DEBUG
 				enabled = false;
@@ -190,7 +190,7 @@ namespace PrunePhysics
 
 		private static void changePhysics(Part p, int newPhysicsSignificance)
 		{
-			if (!p)
+			if (!p || !p.parent)
 				return;
 			if (newPhysicsSignificance != p.PhysicsSignificance) {
 				log(desc(p) + ".PhysicsSignificance " + p.PhysicsSignificance + " -> " + newPhysicsSignificance);

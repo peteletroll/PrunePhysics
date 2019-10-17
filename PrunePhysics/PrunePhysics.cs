@@ -151,6 +151,8 @@ namespace PrunePhysics
 				if (PrunePhysicsField.guiName != newGuiName) {
 					log(desc(part) + ": guiName \"" + PrunePhysicsField.guiName + "\" -> \"" + newGuiName + "\"");
 					PrunePhysicsField.guiName = newGuiName;
+					if (part.PartActionWindow)
+						MonoUtilities.RefreshContextWindows(part);
 				}
 			}
 

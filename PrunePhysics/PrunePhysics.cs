@@ -101,7 +101,7 @@ namespace PrunePhysics
 		public int PhysicsSignificanceOrig = UNKPHYSICS;
 
 		[UI_Toggle()]
-		[KSPField(isPersistant = true, guiActive = true, guiActiveEditor = true)]
+		[KSPField(guiName = "PrunePhysics", isPersistant = true, guiActive = true, guiActiveEditor = true)]
 		public bool PrunePhysics = false;
 		private BaseField PrunePhysicsField = null;
 		private bool prevPrunePhysics = false;

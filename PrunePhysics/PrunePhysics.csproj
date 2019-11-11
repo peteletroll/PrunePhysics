@@ -7,7 +7,7 @@
     <OutputType>Library</OutputType>
     <RootNamespace>PrunePhysics</RootNamespace>
     <AssemblyName>PrunePhysics</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

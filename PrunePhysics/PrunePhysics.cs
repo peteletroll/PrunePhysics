@@ -9,11 +9,25 @@ namespace PrunePhysics
 {
 	public class ModulePrunePhysics: PartModule
 	{
+		private const int UNKPHYSICS = -99999;
+
 		private static Regex[] whiteList = null;
 
 		private static readonly string[] COMMENT = { "//", "#" };
 
-		private const int UNKPHYSICS = -99999;
+		private static readonly string[] whiteListExtension = {
+			"prunephysicswhitelist",
+			"ppwl"
+		};
+
+		private static bool isWhiteListFile(UrlDir.UrlFile url)
+		{
+			string ext = url.fileExtension.ToLowerInvariant();
+			for (int i = 0; i < whiteListExtension.Length; i++)
+				if (ext == whiteListExtension[i])
+					return true;
+			return false;
+		}
 
 		private void loadWhiteList()
 		{
@@ -23,7 +37,7 @@ namespace PrunePhysics
 			List<Regex> wl = new List<Regex>();
 			foreach (UrlDir.UrlFile url in GameDatabase.Instance.root.AllFiles) {
 				// log("FILE " + url.fullPath);
-				if (url.fileExtension != "ppwl")
+				if (!isWhiteListFile(url))
 					continue;
 				string[] line = File.ReadAllLines(url.fullPath);
 				for (int i = 0; i < line.Length; i++) {

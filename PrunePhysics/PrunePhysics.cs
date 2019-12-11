@@ -155,7 +155,7 @@ namespace PrunePhysics
 			base.OnUpdate();
 
 			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor
-			    || !part || !part.PartActionWindow)
+				|| !part || !part.PartActionWindow)
 				return;
 
 			if (PrunePhysicsField != null) {

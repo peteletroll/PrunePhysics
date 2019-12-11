@@ -154,7 +154,8 @@ namespace PrunePhysics
 		{
 			base.OnUpdate();
 
-			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor)
+			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor
+			    || !part || !part.PartActionWindow)
 				return;
 
 			if (PrunePhysicsField != null) {
@@ -165,12 +166,9 @@ namespace PrunePhysics
 				if (PrunePhysicsField.guiName != newGuiName) {
 					log(desc(part) + ": guiName \"" + PrunePhysicsField.guiName + "\" -> \"" + newGuiName + "\"");
 					PrunePhysicsField.guiName = newGuiName;
-					if (part.PartActionWindow)
-						MonoUtilities.RefreshContextWindows(part);
+					MonoUtilities.RefreshContextWindows(part);
 				}
 			}
-
-			// log(desc(part) + ": PrunePhysics.OnUpdate()");
 		}
 
 		public void FixedUpdate()

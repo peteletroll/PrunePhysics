@@ -173,7 +173,7 @@ namespace PrunePhysics
 
 		public void FixedUpdate()
 		{
-			if (HighLogic.LoadedSceneIsEditor)
+			if (HighLogic.LoadedSceneIsEditor || !part)
 				return;
 
 			if (PrunePhysics != prevPrunePhysics) {
@@ -191,8 +191,6 @@ namespace PrunePhysics
 		private void AfterPrunePhysicsChange() {
 			log(desc(part) + ".PrunePhysics is now " + PrunePhysics);
 			int newPhysicsSignificance = PrunePhysics ? 1 : 0;
-			if (!part)
-				return;
 			changePhysics(part, newPhysicsSignificance);
 			List<Part> scp = part.symmetryCounterparts;
 			if (scp != null)

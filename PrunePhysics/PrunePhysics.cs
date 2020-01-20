@@ -154,12 +154,17 @@ namespace PrunePhysics
 
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
 
-			if (PhysicsSignificanceOrig > 0 || !checkWhiteList() || !part.parent) {
-				PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = false;
-#if !DEBUG
-				enabled = false;
+			if (PhysicsSignificanceOrig > 0 || !checkWhiteList() || !part.parent)
+				disablePrunePhysics();
+		}
+
+		private void disablePrunePhysics()
+		{
+#if DEBUG
+			PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = false;
+#else
+			enabled = false;
 #endif
-			}
 		}
 
 		public override void OnUpdate()

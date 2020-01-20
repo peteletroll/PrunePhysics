@@ -71,15 +71,27 @@ namespace PrunePhysics
 			if (!part.gameObject)
 				return false;
 
-			List<PartModule> pms = part.FindModulesImplementing<PartModule>();
-			if (pms == null)
-				return true;
+			List<PartModule> pml = part.FindModulesImplementing<PartModule>();
+			if (pml != null) {
+				for (int i = 0; i < pml.Count; i++) {
+					PartModule pm = pml[i];
+					if (pm && !isInWhiteList(pm, true)) {
+						log(desc(part) + ": " + pm.GetType() + " not in whitelist");
+						return false;
+					}
+				}
+			}
 
-			for (int i = 0; i < pms.Count; i++) {
-				PartModule pm = pms[i];
-				if (!isInWhiteList(pm, true)) {
-					log(desc(part) + ": " + pm.GetType() + " not in whitelist");
-					return false;
+			PartResourceList prl = part.Resources;
+			if (prl != null) {
+				for (int i = 0; i < prl.Count; i++) {
+					PartResource pr = prl[i];
+					if (pr != null && !isInWhiteList(pr.resourceName, true)) {
+						log(desc(part) + ": resource " + pr.resourceName
+							+ "(" + pr.info.id + ")"
+							+ " not in whitelist");
+						return false;
+					}
 				}
 			}
 

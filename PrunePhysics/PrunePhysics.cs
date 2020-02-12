@@ -291,7 +291,7 @@ namespace PrunePhysics
 							if (pr == null)
 								continue;
 							log("RES [" + i + "] " + pr.resourceName
-							    + " " + isInWhiteList(pr, false).ToString());
+								+ " " + isInWhiteList(pr, false).ToString());
 						}
 					} else {
 						log("no Resources");

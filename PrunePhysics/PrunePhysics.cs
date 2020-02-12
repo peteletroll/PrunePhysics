@@ -105,6 +105,13 @@ namespace PrunePhysics
 			return isInWhiteList(c.GetType().ToString(), verbose);
 		}
 
+		private bool isInWhiteList(PartResource r, bool verbose)
+		{
+			if (r == null)
+				return true;
+			return isInWhiteList(r.resourceName, verbose);
+		}
+
 		private bool isInWhiteList(string name, bool verbose)
 		{
 			loadWhiteList();
@@ -245,12 +252,14 @@ namespace PrunePhysics
 					log("SYMMETRY " + part.symMethod + " " + part.symmetryCounterparts.Count);
 					log("PHYSICS " + part.physicalSignificance + " " + part.PhysicsSignificance);
 					log("PARENT " + desc(part.parent, true));
+
 					if (part.children != null) {
 						for (int i = 0; i < part.children.Count; i++)
 							log("CHILD [" + i + "] " + desc(part.children[i], true));
 					} else {
 						log("no children[]");
 					}
+
 					if (part.DragCubes != null) {
 						if (part.DragCubes.Cubes != null) {
 							List<DragCube> cc = part.DragCubes.Cubes;
@@ -262,6 +271,7 @@ namespace PrunePhysics
 					} else {
 						log("no DragCubes");
 					}
+
 					if (part.gameObject) {
 						Component[] mb = part.gameObject.GetComponents<Component>();
 						for (int i = 0; i < mb.Length; i++) {
@@ -272,6 +282,19 @@ namespace PrunePhysics
 						}
 					} else {
 						log("no gameObject");
+					}
+
+					PartResourceList prl = part.Resources;
+					if (prl != null) {
+						for (int i = 0; i < prl.Count; i++) {
+							PartResource pr = prl[i];
+							if (pr == null)
+								continue;
+							log("RES [" + i + "] " + pr.resourceName
+							    + " " + isInWhiteList(pr, false).ToString());
+						}
+					} else {
+						log("no Resources");
 					}
 				} else {
 					log("no part");

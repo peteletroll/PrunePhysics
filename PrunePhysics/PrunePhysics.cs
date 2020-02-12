@@ -284,10 +284,9 @@ namespace PrunePhysics
 						log("no gameObject");
 					}
 
-					PartResourceList prl = part.Resources;
-					if (prl != null) {
-						for (int i = 0; i < prl.Count; i++) {
-							PartResource pr = prl[i];
+					if (part.Resources != null) {
+						for (int i = 0; i < part.Resources.Count; i++) {
+							PartResource pr = part.Resources[i];
 							if (pr == null)
 								continue;
 							log("RES [" + i + "] " + pr.resourceName

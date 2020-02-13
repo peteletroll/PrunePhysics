@@ -71,29 +71,10 @@ namespace PrunePhysics
 			if (!part.gameObject)
 				return false;
 
-			List<PartModule> pml = part.FindModulesImplementing<PartModule>();
-			if (pml != null) {
-				for (int i = 0; i < pml.Count; i++) {
-					PartModule pm = pml[i];
-					if (pm && !isInWhiteList(pm, true)) {
-						log(desc(part) + ": " + pm.GetType() + " not in whitelist");
-						return false;
-					}
-				}
-			}
-
-			PartResourceList prl = part.Resources;
-			if (prl != null) {
-				for (int i = 0; i < prl.Count; i++) {
-					PartResource pr = prl[i];
-					if (pr != null && !isInWhiteList(pr.resourceName, true)) {
-						log(desc(part) + ": resource " + pr.resourceName
-							+ "(" + pr.info.id + ")"
-							+ " not in whitelist");
-						return false;
-					}
-				}
-			}
+			string[] c = whiteListCheckStrings();
+			for (int i = 0; i < c.Length; i++)
+				if (!isInWhiteList(c[i], true))
+					return false;
 
 			return true;
 		}
@@ -103,43 +84,24 @@ namespace PrunePhysics
 			List<string> ret = new List<string>();
 
 			List<PartModule> pml = part.FindModulesImplementing<PartModule>();
-			if (pml != null) {
-				for (int i = 0; i < pml.Count; i++) {
-					PartModule pm = pml[i];
-					if (pm)
-						ret.Add(pm.GetType().ToString());
-				}
-			}
+			if (pml != null)
+				for (int i = 0; i < pml.Count; i++)
+					if (pml[i])
+						ret.Add(pml[i].GetType().ToString());
 
 			PartResourceList prl = part.Resources;
-			if (prl != null) {
-				for (int i = 0; i < prl.Count; i++) {
-					PartResource pr = prl[i];
-					if (pr != null)
-						ret.Add(pr.resourceName);
-				}
-			}
+			if (prl != null)
+				for (int i = 0; i < prl.Count; i++)
+					if (prl[i] != null)
+						ret.Add("Resource." + prl[i].resourceName);
 
 			return ret.ToArray();
 		}
 
-		private bool isInWhiteList(Component c, bool verbose)
-		{
-			if (c == null)
-				return true;
-			return isInWhiteList(c.GetType().ToString(), verbose);
-		}
-
-		private bool isInWhiteList(PartResource r, bool verbose)
-		{
-			if (r == null)
-				return true;
-			return isInWhiteList(r.resourceName, verbose);
-		}
-
-		private bool isInWhiteList(string name, bool verbose)
+		private bool isInWhiteList(string fullname, bool verbose)
 		{
 			loadWhiteList();
+			string name = fullname;
 			int p = name.LastIndexOf('.');
 			if (p > 0)
 				name = name.Remove(0, p + 1);
@@ -151,7 +113,7 @@ namespace PrunePhysics
 					return true;
 			}
 			if (verbose)
-				log("name \"" + name + "\" is not in whitelist");
+				log("name \"" + fullname + "\" is not in whitelist");
 			return false;
 		}
 
@@ -297,28 +259,21 @@ namespace PrunePhysics
 						log("no DragCubes");
 					}
 
+					string[] c = whiteListCheckStrings();
+					for (int i = 0; i < c.Length; i++)
+						log("WLCS [" + i + "] " + c[i]
+							+ " " + isInWhiteList(c[i], false));
+
 					if (part.gameObject) {
 						Component[] mb = part.gameObject.GetComponents<Component>();
 						for (int i = 0; i < mb.Length; i++) {
-							bool isMod = (mb[i] is PartModule);
+							if (!mb[i] || mb[i] is PartModule)
+								continue;
 							log("COMP [" + i + "] " + mb[i].GetInstanceID()
-								+ " " + desc(mb[i].GetType())
-								+ " " + (isMod ? isInWhiteList(mb[i], false).ToString() : "CMP"));
+								+ " " + desc(mb[i].GetType()));
 						}
 					} else {
 						log("no gameObject");
-					}
-
-					if (part.Resources != null) {
-						for (int i = 0; i < part.Resources.Count; i++) {
-							PartResource pr = part.Resources[i];
-							if (pr == null)
-								continue;
-							log("RES [" + i + "] " + pr.resourceName
-								+ " " + isInWhiteList(pr, false).ToString());
-						}
-					} else {
-						log("no Resources");
 					}
 				} else {
 					log("no part");

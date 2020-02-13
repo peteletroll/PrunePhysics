@@ -30,6 +30,7 @@ ModuleRCSFX
 ModuleRoboticController
 ModuleScienceExperiment
 RetractableLadder
+ModuleResourceDrain
 
 // IndicatorLights
 ModuleResource.*Indicator

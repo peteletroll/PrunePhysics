@@ -98,6 +98,31 @@ namespace PrunePhysics
 			return true;
 		}
 
+		private string[] whiteListCheckStrings()
+		{
+			List<string> ret = new List<string>();
+
+			List<PartModule> pml = part.FindModulesImplementing<PartModule>();
+			if (pml != null) {
+				for (int i = 0; i < pml.Count; i++) {
+					PartModule pm = pml[i];
+					if (pm)
+						ret.Add(pm.GetType().ToString());
+				}
+			}
+
+			PartResourceList prl = part.Resources;
+			if (prl != null) {
+				for (int i = 0; i < prl.Count; i++) {
+					PartResource pr = prl[i];
+					if (pr != null)
+						ret.Add(pr.resourceName);
+				}
+			}
+
+			return ret.ToArray();
+		}
+
 		private bool isInWhiteList(Component c, bool verbose)
 		{
 			if (c == null)

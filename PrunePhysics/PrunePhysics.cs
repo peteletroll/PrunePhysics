@@ -128,13 +128,19 @@ namespace PrunePhysics
 
 		private Part.PhysicalSignificance prevPhysicalSignificance = Part.PhysicalSignificance.FULL;
 
+		private bool canPrunePhysics()
+		{
+			if (!part || !part.parent)
+				return false;
+			return checkWhiteList();
+		}
+
 		public override void OnStart(StartState state)
 		{
 			base.OnStart(state);
 
 			prevPhysicalSignificance = part.physicalSignificance;
 			prevPrunePhysics = PrunePhysics;
-
 			if (PhysicsSignificanceOrig == UNKPHYSICS) {
 				PhysicsSignificanceOrig = part.PhysicsSignificance;
 				log(desc(part, true) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig
@@ -148,8 +154,16 @@ namespace PrunePhysics
 
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
 
-			if (PhysicsSignificanceOrig > 0 || !checkWhiteList() || !part.parent)
+			bool cpp = canPrunePhysics();
+
+			if (PhysicsSignificanceOrig > 0 || !cpp)
 				disablePrunePhysics();
+
+			if (PrunePhysics && cpp) {
+				if (part.PhysicsSignificance <= 0)
+					log(desc(part) + ": PRUNING PHYSICS");
+				part.PhysicsSignificance = 1;
+			}
 		}
 
 		private void disablePrunePhysics()
@@ -204,13 +218,21 @@ namespace PrunePhysics
 			int newPhysicsSignificance = PrunePhysics ? 1 : 0;
 			changePhysics(part, newPhysicsSignificance);
 			List<Part> scp = part.symmetryCounterparts;
-			if (scp != null)
-				for (int i = 0; i < scp.Count; i++)
-					changePhysics(scp[i], newPhysicsSignificance);
+			if (scp == null)
+				return;
+			for (int i = 0; i < scp.Count; i++) {
+				Part p = scp[i];
+				if (p == part)
+					continue;
+				ModulePrunePhysics mpp = p.FindModuleImplementing<ModulePrunePhysics>();
+				if (mpp)
+					mpp.PrunePhysics = PrunePhysics;
+			}
 		}
 
 		private static void changePhysics(Part p, int newPhysicsSignificance)
 		{
+			log(desc(p) + ".changePhysics(" + newPhysicsSignificance + ")");
 			if (!p || !p.parent)
 				return;
 			if (newPhysicsSignificance != p.PhysicsSignificance) {

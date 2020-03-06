@@ -261,6 +261,7 @@ namespace PrunePhysics
 					log("SYMMETRY " + part.symMethod + " " + part.symmetryCounterparts.Count);
 					log("PHYSICS " + part.physicalSignificance + " " + part.PhysicsSignificance);
 					log("PARENT " + desc(part.parent, true));
+					log("ATTACH " + desc(part.attachJoint));
 
 					if (part.children != null) {
 						for (int i = 0; i < part.children.Count; i++)

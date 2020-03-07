@@ -3,12 +3,13 @@
 ModulePrunePhysics
 
 // Resource whitelist
-LiquidFuel
-Oxidizer
-MonoPropellant
-XenonGas
-Ore
 ElectricCharge
+// Fuel/Ore tanks are excluded because not properly tested yet
+// LiquidFuel
+// Oxidizer
+// MonoPropellant
+// XenonGas
+// Ore
 
 // whitelist from Stock + MH DLC + BG DLC
 // These are the modules in Stock/DLC physicsless parts

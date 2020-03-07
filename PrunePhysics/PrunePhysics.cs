@@ -1,5 +1,6 @@
 using UnityEngine;
 using System;
+using System.Reflection;
 using System.Collections.Generic;
 using System.IO;
 using System.Text;
@@ -9,6 +10,35 @@ namespace PrunePhysics
 {
 	public class ModulePrunePhysics: PartModule
 	{
+		[KSPField(isPersistant = true)]
+		public int Revision = -1;
+
+		private static int _revision = -1;
+		private static int getRevision()
+		{
+			if (_revision < 0) {
+				_revision = 0;
+				try {
+					_revision = Assembly.GetExecutingAssembly().GetName().Version.Revision;
+				} catch (Exception e) {
+					string sep = new string('-', 80);
+					log(sep);
+					log("Exception reading revision:\n" + e.StackTrace);
+					log(sep);
+				}
+			}
+			return _revision;
+		}
+
+		private void checkRevision()
+		{
+			int r = getRevision();
+			if (Revision != r) {
+				log(nameof(PrunePhysics) + ": REVISION " + Revision + " -> " + r);
+				Revision = r;
+			}
+		}
+
 		private const int UNKPHYSICS = -99999;
 
 		private static Regex[] whiteList = null;
@@ -138,6 +168,8 @@ namespace PrunePhysics
 		public override void OnStart(StartState state)
 		{
 			base.OnStart(state);
+
+			checkRevision();
 
 			prevPhysicalSignificance = part.physicalSignificance;
 			prevPrunePhysics = PrunePhysics;

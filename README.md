@@ -9,7 +9,7 @@ The module contains a whitelist; parts containing modules
 or resources not in the whitelist can not be converted to physicsless.
 The whitelist is contained in files named \*.prunephysicswhitelist or
 \*.ppwl, placed anywhere in the GameData folder. Any mod can add itself
-to the PrunePhysics whitelist by adding a whitelist file in its own
+to the PrunePhysics whitelist by adding a whitelist file to its own
 distribution.
 
 To convert a part to physicsless, activate the PrunePhysics switch

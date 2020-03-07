@@ -96,14 +96,14 @@ namespace PrunePhysics
 			whiteList = wl.ToArray();
 		}
 
-		private bool checkWhiteList()
+		private bool checkWhiteList(Part part = null)
 		{
 			if (!part.gameObject)
 				return false;
 
 			string[] c = whiteListCheckStrings();
 			for (int i = 0; i < c.Length; i++)
-				if (!isInWhiteList(c[i], true))
+				if (!isInWhiteList(c[i], true, part))
 					return false;
 
 			return true;
@@ -128,7 +128,7 @@ namespace PrunePhysics
 			return ret.ToArray();
 		}
 
-		private bool isInWhiteList(string fullname, bool verbose)
+		private bool isInWhiteList(string fullname, bool verbose, Part part = null)
 		{
 			loadWhiteList();
 			string name = fullname;
@@ -143,7 +143,7 @@ namespace PrunePhysics
 					return true;
 			}
 			if (verbose)
-				log("name \"" + fullname + "\" is not in whitelist");
+				log((part ? desc(part) + ": " : "") + "name \"" + fullname + "\" is not in whitelist");
 			return false;
 		}
 
@@ -158,11 +158,13 @@ namespace PrunePhysics
 
 		private Part.PhysicalSignificance prevPhysicalSignificance = Part.PhysicalSignificance.FULL;
 
-		private bool canPrunePhysics()
+		private bool canPrunePhysics(Part part = null)
 		{
 			if (!part || !part.parent)
 				return false;
-			return checkWhiteList();
+			if (PhysicsSignificanceOrig > 0)
+				return false;
+			return checkWhiteList(part);
 		}
 
 		public override void OnStart(StartState state)
@@ -186,7 +188,7 @@ namespace PrunePhysics
 
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
 
-			bool cpp = canPrunePhysics();
+			bool cpp = canPrunePhysics(part);
 
 			if (PhysicsSignificanceOrig > 0 || !cpp)
 				disablePrunePhysics();
@@ -200,11 +202,8 @@ namespace PrunePhysics
 
 		private void disablePrunePhysics()
 		{
-#if DEBUG
 			PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = false;
-#else
 			enabled = false;
-#endif
 		}
 
 		public override void OnUpdate()

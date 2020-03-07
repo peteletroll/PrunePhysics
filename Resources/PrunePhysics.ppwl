@@ -3,6 +3,7 @@
 ModulePrunePhysics
 
 // Resource whitelist
+
 ElectricCharge
 // Fuel/Ore tanks are excluded because not properly tested yet
 // LiquidFuel

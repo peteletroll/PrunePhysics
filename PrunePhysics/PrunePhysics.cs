@@ -168,7 +168,7 @@ namespace PrunePhysics
 			} else if (PhysicsSignificanceOrig > 0) {
 				failMsg = "already physicsless";
 			} else if (!checkWhiteList()) {
-				failMsg = "whithelist check failed";
+				failMsg = "whitelist check failed";
 			}
 			if (failMsg != "") {
 				log(desc(part) + ".canPrunePhysics() returns false: " + failMsg);

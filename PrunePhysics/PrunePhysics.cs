@@ -163,16 +163,16 @@ namespace PrunePhysics
 			string failMsg = "";
 			if (!part) {
 				failMsg = "no part";
-			} else if (!HighLogic.LoadedSceneIsEditor && !part.parent) {
+			} else if (PhysicsSignificanceOrig > 0) {
+				failMsg = "already physicsless";
+			} else if (!checkWhiteList()) {
+				failMsg = "whitelist check failed";
+			} else if (!part.parent) {
 				if (HighLogic.LoadedSceneIsEditor) {
 					log(desc(part) + ".canPrunePhysics(): root part, but in editor");
 				} else {
 					failMsg = "is root in flight";
 				}
-			} else if (PhysicsSignificanceOrig > 0) {
-				failMsg = "already physicsless";
-			} else if (!checkWhiteList()) {
-				failMsg = "whitelist check failed";
 			}
 			if (failMsg != "") {
 				log(desc(part) + ".canPrunePhysics() returns false: " + failMsg);
@@ -211,8 +211,8 @@ namespace PrunePhysics
 				return;
 
 			if (PrunePhysics && cpp) {
-				if (part.PhysicsSignificance <= 0)
-					log(desc(part) + ": PRUNING PHYSICS");
+				log(desc(part) + ": PRUNING PHYSICS FROM ORIG=" + PhysicsSignificanceOrig
+					+ " CUR=" + part.PhysicsSignificance);
 				part.PhysicsSignificance = 1;
 			}
 		}

@@ -156,6 +156,9 @@ namespace PrunePhysics
 		private BaseField PrunePhysicsField = null;
 		private bool prevPrunePhysics = false;
 
+		private BaseEvent TogglePrunePhysicsEnabledEvent = null;
+		private static bool PrunePhysicsEnabled = true;
+
 		private Part.PhysicalSignificance prevPhysicalSignificance = Part.PhysicalSignificance.FULL;
 
 		private bool canPrunePhysics()
@@ -163,6 +166,8 @@ namespace PrunePhysics
 			string failMsg = "";
 			if (!part) {
 				failMsg = "no part";
+			} else if (!PrunePhysicsEnabled) {
+				failMsg = "disabled globally";
 			} else if (PhysicsSignificanceOrig > 0) {
 				failMsg = "already physicsless";
 			} else if (!checkWhiteList()) {
@@ -185,6 +190,7 @@ namespace PrunePhysics
 		public override void OnStart(StartState state)
 		{
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
+			TogglePrunePhysicsEnabledEvent = Events["TogglePrunePhysicsEnabled"];
 
 			base.OnStart(state);
 
@@ -219,19 +225,9 @@ namespace PrunePhysics
 
 		private void setPrunePhysics(bool flag)
 		{
-			// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP1");
 			enabled = flag;
-			// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP2");
-			if (PrunePhysicsField != null) {
-				// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP3");
+			if (PrunePhysicsField != null)
 				PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = flag;
-				// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP4");
-			} else {
-				// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP5");
-				log(desc(part) + ".setPrunePhysics(" + flag + " called without " + nameof(PrunePhysicsField));
-				// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP6");
-			}
-			// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP7");
 		}
 
 		public override void OnUpdate()
@@ -253,6 +249,10 @@ namespace PrunePhysics
 					MonoUtilities.RefreshContextWindows(part);
 				}
 			}
+
+			if (TogglePrunePhysicsEnabledEvent != null)
+				TogglePrunePhysicsEnabledEvent.guiName = (PrunePhysicsEnabled ? "Disable" : "Enable")
+					+ " PrunePhysics Globally";
 		}
 
 		public void FixedUpdate()
@@ -307,6 +307,16 @@ namespace PrunePhysics
 		{
 			whiteList = null;
 			loadWhiteList();
+		}
+
+		[KSPEvent(
+			guiName = "Toggle PrunePhysics Globally",
+			guiActive = true,
+			guiActiveEditor = false
+		)]
+		public void TogglePrunePhysicsEnabled()
+		{
+			PrunePhysicsEnabled = !PrunePhysicsEnabled;
 		}
 
 		[KSPEvent(guiActive = true, guiActiveEditor = true)]

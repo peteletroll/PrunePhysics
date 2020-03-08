@@ -301,6 +301,7 @@ namespace PrunePhysics
 		}
 
 #if DEBUG
+
 		[KSPEvent(guiActive = true, guiActiveEditor = false)]
 		public void ResetWhiteList()
 		{
@@ -308,7 +309,7 @@ namespace PrunePhysics
 			loadWhiteList();
 		}
 
-		[KSPEvent(guiActive = true, guiActiveEditor = false)]
+		[KSPEvent(guiActive = true, guiActiveEditor = true)]
 		public void DumpPartPhysics()
 		{
 			string sep = new string('-', 16);
@@ -363,6 +364,77 @@ namespace PrunePhysics
 			}
 			log(sep + " " + desc(part) + " END " + sep);
 		}
+
+		[KSPEvent(guiActive = true, guiActiveEditor = true)]
+		public void DumpPhysicsStats()
+		{
+			string sep = new string('-', 16);
+			log(sep + " " + desc(part, true) + " BEGIN " + sep);
+			try {
+				if (!vessel) {
+					log("no vessel");
+				} else if (vessel.parts == null) {
+					log("no vessel.parts");
+				} else {
+					log("ROOT " + desc(vessel.rootPart));
+					Part[] pp = vessel.parts.ToArray();
+					log(pp.Length + " parts");
+					Dictionary<string, int> s = new Dictionary<string, int>();
+					for (int i = 0; i < pp.Length; i++) {
+						Part p = pp[i];
+						if (!p) {
+							incStat(s, "null");
+							continue;
+						}
+
+						incStat(s, "physicalSignificance = " + p.physicalSignificance);
+						incStat(s, "PhysicsSignificance value = " + p.PhysicsSignificance);
+						if (p.PhysicsSignificance > 0) {
+							incStat(s, "PhysicsSignificance > 0");
+						} else {
+							incStat(s, "PhysicsSignificance <= 0");
+						}
+
+						ModulePrunePhysics mpp = p.FindModuleImplementing<ModulePrunePhysics>();
+						if (!mpp) {
+							incStat(s, "no mpp");
+							continue;
+						}
+
+						incStat(s, "PhysicsSignificanceOrig value = " + mpp.PhysicsSignificanceOrig);
+						if (mpp.PhysicsSignificanceOrig > 0) {
+							incStat(s, "PhysicsSignificanceOrig > 0");
+						} else {
+							incStat(s, "PhysicsSignificanceOrig <= 0");
+						}
+
+						incStat(s, "PrunePhysics = " + mpp.PrunePhysics);
+					}
+
+					List<string> l = new List<string>();
+					foreach (KeyValuePair<string, int> i in s) {
+						l.Add(i.Key + ": " + i.Value);
+					}
+					l.Sort();
+					for (int i = 0; i < l.Count; i++) {
+						log(l[i]);
+					}
+				}
+			} catch (Exception e) {
+				log("EXCEPTION " + e.StackTrace);
+			}
+			log(sep + " " + desc(part) + " END " + sep);
+		}
+
+		private static void incStat(Dictionary<string, int> d, string k, int i = 1)
+		{
+			if (d.ContainsKey(k)) {
+				d[k] += i;
+			} else {
+				d[k] = i;
+			}
+		}
+
 #endif
 
 		private static string desc(Type t)

@@ -164,7 +164,11 @@ namespace PrunePhysics
 			if (!part) {
 				failMsg = "no part";
 			} else if (!HighLogic.LoadedSceneIsEditor && !part.parent) {
-				failMsg = "is root in flight";
+				if (HighLogic.LoadedSceneIsEditor) {
+					log(desc(part) + ".canPrunePhysics(): root part, but in editor");
+				} else {
+					failMsg = "is root in flight";
+				}
 			} else if (PhysicsSignificanceOrig > 0) {
 				failMsg = "already physicsless";
 			} else if (!checkWhiteList()) {

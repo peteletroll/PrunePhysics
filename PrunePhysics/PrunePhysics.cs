@@ -96,7 +96,7 @@ namespace PrunePhysics
 			whiteList = wl.ToArray();
 		}
 
-		private bool checkWhiteList(Part part = null)
+		private bool checkWhiteList()
 		{
 			if (!part.gameObject)
 				return false;
@@ -158,18 +158,33 @@ namespace PrunePhysics
 
 		private Part.PhysicalSignificance prevPhysicalSignificance = Part.PhysicalSignificance.FULL;
 
-		private bool canPrunePhysics(Part part = null)
+		private bool canPrunePhysics()
 		{
-			if (!part || !part.parent)
+			string failMsg = "";
+			if (!part) {
+				failMsg = "no part";
+			} else if (!HighLogic.LoadedSceneIsEditor && !part.parent) {
+				failMsg = "is root in flight";
+			} else if (PhysicsSignificanceOrig > 0) {
+				failMsg = "already physicsless";
+			} else if (!checkWhiteList()) {
+				failMsg = "whithelist check failed";
+			}
+			if (failMsg != "") {
+				log(desc(part) + ".canPrunePhysics() returns false: " + failMsg);
 				return false;
-			if (PhysicsSignificanceOrig > 0)
-				return false;
-			return checkWhiteList(part);
+			}
+			log(desc(part) + ".canPrunePhysics() returns true");
+			return true;
 		}
 
 		public override void OnStart(StartState state)
 		{
+			PrunePhysicsField = Fields[nameof(PrunePhysics)];
+
 			base.OnStart(state);
+
+			setPrunePhysics(true);
 
 			checkRevision();
 
@@ -181,17 +196,15 @@ namespace PrunePhysics
 					+ " at state " + state);
 			}
 
-			if (!HighLogic.LoadedSceneIsFlight)
-				return;
-
 			log(desc(part, true) + ".OnStart(" + state + ")");
 
-			PrunePhysicsField = Fields[nameof(PrunePhysics)];
-
-			bool cpp = canPrunePhysics(part);
+			bool cpp = canPrunePhysics();
 
 			if (PhysicsSignificanceOrig > 0 || !cpp)
-				disablePrunePhysics();
+				setPrunePhysics(false);
+
+			if (!HighLogic.LoadedSceneIsFlight)
+				return;
 
 			if (PrunePhysics && cpp) {
 				if (part.PhysicsSignificance <= 0)
@@ -200,10 +213,21 @@ namespace PrunePhysics
 			}
 		}
 
-		private void disablePrunePhysics()
+		private void setPrunePhysics(bool flag)
 		{
-			PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = false;
-			enabled = false;
+			// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP1");
+			enabled = flag;
+			// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP2");
+			if (PrunePhysicsField != null) {
+				// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP3");
+				PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = flag;
+				// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP4");
+			} else {
+				// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP5");
+				log(desc(part) + ".setPrunePhysics(" + flag + " called without " + nameof(PrunePhysicsField));
+				// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP6");
+			}
+			// log(desc(part) + ".setPrunePhysics(" + flag + ") STEP7");
 		}
 
 		public override void OnUpdate()
@@ -279,9 +303,7 @@ namespace PrunePhysics
 			whiteList = null;
 			loadWhiteList();
 		}
-#endif
 
-#if DEBUG
 		[KSPEvent(guiActive = true, guiActiveEditor = false)]
 		public void DumpPartPhysics()
 		{

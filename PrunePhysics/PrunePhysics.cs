@@ -187,12 +187,26 @@ namespace PrunePhysics
 			return true;
 		}
 
+		public override void OnAwake()
+		{
+			log(desc(part, true) + ".OnAwake()");
+
+			base.OnAwake();
+		}
+
 		public override void OnStart(StartState state)
+		{
+			log(desc(part, true) + ".OnStart(" + state + ")");
+
+			base.OnStart(state);
+
+			doSetup(state);
+		}
+
+		private void doSetup(StartState state)
 		{
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
 			TogglePrunePhysicsEnabledEvent = Events["TogglePrunePhysicsEnabled"];
-
-			base.OnStart(state);
 
 			setPrunePhysics(true);
 
@@ -205,8 +219,6 @@ namespace PrunePhysics
 				log(desc(part, true) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig
 					+ " at state " + state);
 			}
-
-			log(desc(part, true) + ".OnStart(" + state + ")");
 
 			bool cpp = canPrunePhysics();
 

@@ -189,21 +189,21 @@ namespace PrunePhysics
 
 		public override void OnAwake()
 		{
-			log(desc(part, true) + ".OnAwake()");
+			log(desc(part, true) + ".OnAwake() in scene " + HighLogic.LoadedScene);
 
 			base.OnAwake();
 		}
 
 		public override void OnStart(StartState state)
 		{
-			log(desc(part, true) + ".OnStart(" + state + ")");
+			log(desc(part, true) + ".OnStart(" + state + ") in scene " + HighLogic.LoadedScene);
 
 			base.OnStart(state);
 
-			doSetup(state);
+			doSetup(state.ToString());
 		}
 
-		private void doSetup(StartState state)
+		private void doSetup(string state)
 		{
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
 			TogglePrunePhysicsEnabledEvent = Events["TogglePrunePhysicsEnabled"];

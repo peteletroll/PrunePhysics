@@ -189,16 +189,22 @@ namespace PrunePhysics
 
 		public override void OnAwake()
 		{
-			log(desc(part, true) + ".OnAwake() in scene " + HighLogic.LoadedScene);
-
 			base.OnAwake();
+
+			if (HighLogic.LoadedScene != GameScenes.FLIGHT)
+				return;
+
+			log(desc(part, true) + ".OnAwake() in scene " + HighLogic.LoadedScene);
+			canPrunePhysics();
+
+			// doSetup(HighLogic.LoadedScene.ToString());
 		}
 
 		public override void OnStart(StartState state)
 		{
-			log(desc(part, true) + ".OnStart(" + state + ") in scene " + HighLogic.LoadedScene);
-
 			base.OnStart(state);
+
+			log(desc(part, true) + ".OnStart(" + state + ") in scene " + HighLogic.LoadedScene);
 
 			doSetup(state.ToString());
 		}
@@ -401,6 +407,7 @@ namespace PrunePhysics
 					log("ROOT " + desc(vessel.rootPart));
 					Part[] pp = vessel.parts.ToArray();
 					log(pp.Length + " parts");
+
 					Dictionary<string, int> s = new Dictionary<string, int>();
 					for (int i = 0; i < pp.Length; i++) {
 						Part p = pp[i];
@@ -408,6 +415,10 @@ namespace PrunePhysics
 							incStat(s, "null");
 							continue;
 						}
+
+						incStat(s, "PartJoints", p.gameObject.GetComponents<PartJoint>().Length);
+						incStat(s, "ConfigurableJoints", p.gameObject.GetComponents<ConfigurableJoint>().Length);
+						incStat(s, "Rigidbodies", p.gameObject.GetComponents<Rigidbody>().Length);
 
 						incStat(s, "physicalSignificance = " + p.physicalSignificance);
 						incStat(s, "PhysicsSignificance value = " + p.PhysicsSignificance);
@@ -457,6 +468,12 @@ namespace PrunePhysics
 			}
 		}
 
+		[KSPEvent(guiActive = true, guiActiveEditor = false)]
+		public void CycleAllAutoStrut()
+		{
+			log("CycleAllAutoStrut()");
+			vessel.CycleAllAutoStrut();
+		}
 #endif
 
 		private static string desc(Type t)

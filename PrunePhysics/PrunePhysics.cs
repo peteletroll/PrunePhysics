@@ -193,7 +193,8 @@ namespace PrunePhysics
 
 			if (HighLogic.LoadedScene != GameScenes.FLIGHT)
 				return;
-
+			if (!PrunePhysics)
+				return;
 			log(desc(part, true) + ".OnAwake() in scene " + HighLogic.LoadedScene);
 			canPrunePhysics();
 
@@ -335,6 +336,14 @@ namespace PrunePhysics
 		public void TogglePrunePhysicsEnabled()
 		{
 			PrunePhysicsEnabled = !PrunePhysicsEnabled;
+		}
+
+		[KSPEvent(guiActive = true, guiActiveEditor = true)]
+		public void ToggleShowAutostruts()
+		{
+			PhysicsGlobals.AutoStrutDisplay = !PhysicsGlobals.AutoStrutDisplay;
+			if (HighLogic.LoadedSceneIsEditor)
+				GameEvents.onEditorPartEvent.Fire(ConstructionEventType.PartTweaked, part);
 		}
 
 		[KSPEvent(guiActive = true, guiActiveEditor = true)]
@@ -509,7 +518,8 @@ namespace PrunePhysics
 			if (!j)
 				return "J:null";
 			string m = j.joints.Count == 1 ? "" : "[" + j.joints.Count + "]";
-			return "J:" + j.GetInstanceID() + m + "[" + desc(j.Host) + ">" + desc(j.Target) + "]";
+			string ot = (j == j.Host.attachJoint || j == j.Target.attachJoint) ? "" : "OT:";
+			return "J:" + ot + j.GetInstanceID() + m + "[" + desc(j.Host) + ">" + desc(j.Target) + "]";
 		}
 
 		private static string desc(DragCube c)

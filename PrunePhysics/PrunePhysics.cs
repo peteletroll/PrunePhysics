@@ -383,6 +383,10 @@ namespace PrunePhysics
 							+ " " + isInWhiteList(c[i], false));
 
 					if (part.gameObject) {
+						PartJoint[] pj = part.gameObject.GetComponents<PartJoint>();
+						for (int i = 0; i < pj.Length; i++)
+							log("JOINT " + desc(pj[i]));
+
 						Component[] mb = part.gameObject.GetComponents<Component>();
 						for (int i = 0; i < mb.Length; i++) {
 							if (!mb[i] || mb[i] is PartModule)

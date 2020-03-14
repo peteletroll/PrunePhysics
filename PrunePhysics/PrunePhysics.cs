@@ -322,6 +322,23 @@ namespace PrunePhysics
 #if DEBUG
 
 		[KSPEvent(guiActive = true, guiActiveEditor = false)]
+		public void ReplaceAttachJoint()
+		{
+			Part p = part;
+
+			log("ReplaceAttachJoint(" + desc(p) + ")");
+			AttachModes m = p.attachMode;
+			log("attachMode: " + m);
+			log("old attachJoint: " + desc(p.attachJoint));
+			if (!p.attachJoint)
+				return;
+			Destroy(p.attachJoint);
+			p.attachJoint = null;
+			p.CreateAttachJoint(m);
+			log("new attachJoint: " + desc(p.attachJoint));
+		}
+
+		[KSPEvent(guiActive = true, guiActiveEditor = false)]
 		public void ResetWhiteList()
 		{
 			whiteList = null;

@@ -39,8 +39,6 @@ namespace PrunePhysics
 			}
 		}
 
-		private const int UNKPHYSICS = -99999;
-
 		private static Regex[] whiteList = null;
 
 		private static readonly string[] COMMENT = { "//", "#" };
@@ -147,17 +145,26 @@ namespace PrunePhysics
 			return false;
 		}
 
+		// these are used only in debug mode
+		private static bool PrunePhysicsEnabled = true;
+		private void UpdateTogglePrunePhysicsEnabledGui()
+		{
+			BaseEvent TogglePrunePhysicsEnabledEvent = Events["TogglePrunePhysicsEnabled"];
+			if (TogglePrunePhysicsEnabledEvent != null)
+				TogglePrunePhysicsEnabledEvent.guiName = (PrunePhysicsEnabled ? "Disable" : "Enable")
+					+ " PrunePhysics Globally";
+		}
+
+		private const int PhysicsSignificanceDefault = -1;
+
 		[KSPField(isPersistant = true)]
-		public int PhysicsSignificanceOrig = UNKPHYSICS;
+		public int PhysicsSignificanceOrig = PhysicsSignificanceDefault;
 
 		[UI_Toggle()]
 		[KSPField(guiName = "PrunePhysics", isPersistant = true, guiActive = true, guiActiveEditor = true)]
 		public bool PrunePhysics = false;
 		private BaseField PrunePhysicsField = null;
 		private bool prevPrunePhysics = false;
-
-		private BaseEvent TogglePrunePhysicsEnabledEvent = null;
-		private static bool PrunePhysicsEnabled = true;
 
 		private Part.PhysicalSignificance prevPhysicalSignificance = Part.PhysicalSignificance.FULL;
 
@@ -168,15 +175,19 @@ namespace PrunePhysics
 				failMsg = "no part";
 			} else if (!PrunePhysicsEnabled) {
 				failMsg = "disabled globally";
+			} else if (part.sameVesselCollision) {
+				failMsg = "sameVesselCollision is true";
 			} else if (PhysicsSignificanceOrig > 0) {
-				failMsg = "already physicsless";
+				failMsg = "originally physicsless";
+			} else if (part.isVesselEVA) {
+				failMsg = "is EVA";
 			} else if (!checkWhiteList()) {
 				failMsg = "whitelist check failed";
 			} else if (!part.parent) {
-				if (HighLogic.LoadedSceneIsEditor) {
-					log(desc(part) + ".canPrunePhysics(): root part, but in editor");
-				} else {
+				if (HighLogic.LoadedSceneIsFlight) {
 					failMsg = "is root in flight";
+				} else {
+					log(desc(part) + ".canPrunePhysics(): root part, but not in flight");
 				}
 			}
 			if (failMsg != "") {
@@ -187,77 +198,55 @@ namespace PrunePhysics
 			return true;
 		}
 
-		public override void OnAwake()
-		{
-			base.OnAwake();
-
-			if (HighLogic.LoadedScene != GameScenes.FLIGHT)
-				return;
-			if (!PrunePhysics)
-				return;
-			log(desc(part, true) + ".OnAwake() in scene " + HighLogic.LoadedScene);
-			canPrunePhysics();
-
-			// doSetup(HighLogic.LoadedScene.ToString());
-		}
-
 		public override void OnStart(StartState state)
 		{
 			base.OnStart(state);
-
-			log(desc(part, true) + ".OnStart(" + state + ") in scene " + HighLogic.LoadedScene);
-
-			doSetup(state.ToString());
-		}
-
-		private void doSetup(string state)
-		{
-			PrunePhysicsField = Fields[nameof(PrunePhysics)];
-			TogglePrunePhysicsEnabledEvent = Events["TogglePrunePhysicsEnabled"];
-
-			setPrunePhysics(true);
-
+			enabled = false;
 			checkRevision();
+
+			if (!part.partInfo.partConfig.TryGetValue("PhysicsSignificance", ref PhysicsSignificanceOrig))
+				PhysicsSignificanceOrig = PhysicsSignificanceDefault;
+
+			if (PhysicsSignificanceOrig <= 0 && part.PhysicsSignificance > 0)
+				PrunePhysics = true;
 
 			prevPhysicalSignificance = part.physicalSignificance;
 			prevPrunePhysics = PrunePhysics;
-			if (PhysicsSignificanceOrig == UNKPHYSICS) {
-				PhysicsSignificanceOrig = part.PhysicsSignificance;
-				log(desc(part, true) + ": PhysicsSignificanceOrig = " + PhysicsSignificanceOrig
-					+ " at state " + state);
-			}
+
+			PrunePhysicsField = Fields[nameof(PrunePhysics)];
+
+			UpdateTogglePrunePhysicsEnabledGui();
 
 			bool cpp = canPrunePhysics();
 
-			if (PhysicsSignificanceOrig > 0 || !cpp)
-				setPrunePhysics(false);
-
-			if (!HighLogic.LoadedSceneIsFlight)
-				return;
-
-			if (PrunePhysics && cpp) {
-				log(desc(part) + ": PRUNING PHYSICS FROM ORIG=" + PhysicsSignificanceOrig
-					+ " CUR=" + part.PhysicsSignificance);
-				part.PhysicsSignificance = 1;
-			}
-		}
-
-		private void setPrunePhysics(bool flag)
-		{
-			enabled = flag;
 			if (PrunePhysicsField != null)
-				PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = flag;
+				PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = cpp;
+
+			if (PrunePhysics) {
+				if (PrunePhysics && HighLogic.LoadedSceneIsFlight && cpp) {
+					log(desc(part) + ": PRUNING PHYSICS FROM ORIG=" + PhysicsSignificanceOrig
+						+ " CUR=" + part.PhysicsSignificance);
+					part.PhysicsSignificance = 1;
+				}
+			} else {
+				part.PhysicsSignificance = PhysicsSignificanceOrig;
+			}
 		}
 
 		public override void OnUpdate()
 		{
 			base.OnUpdate();
 
-			if (MapView.MapIsEnabled || HighLogic.LoadedSceneIsEditor
-				|| !part || !part.PartActionWindow)
+			if (!HighLogic.LoadedSceneIsFlight)
 				return;
 
-			if (PrunePhysicsField != null) {
+			if (part.physicalSignificance != prevPhysicalSignificance) {
+				log(desc(part, true) + ": " + prevPhysicalSignificance + " -> " + part.physicalSignificance
+					+ " in " + HighLogic.LoadedScene);
+				prevPhysicalSignificance = part.physicalSignificance;
+			}
+
+			if (part.PartActionWindow && PrunePhysicsField != null) {
 				bool wantedPhysics = !PrunePhysics;
 				bool actualPhysics = (part.physicalSignificance == Part.PhysicalSignificance.FULL);
 				string newGuiName = nameof(PrunePhysics)
@@ -269,25 +258,9 @@ namespace PrunePhysics
 				}
 			}
 
-			if (TogglePrunePhysicsEnabledEvent != null)
-				TogglePrunePhysicsEnabledEvent.guiName = (PrunePhysicsEnabled ? "Disable" : "Enable")
-					+ " PrunePhysics Globally";
-		}
-
-		public void FixedUpdate()
-		{
-			if (HighLogic.LoadedSceneIsEditor || !part)
-				return;
-
 			if (PrunePhysics != prevPrunePhysics) {
 				prevPrunePhysics = PrunePhysics;
 				AfterPrunePhysicsChange();
-			}
-
-			if (part.physicalSignificance != prevPhysicalSignificance) {
-				log(desc(part, true) + ": " + prevPhysicalSignificance + " -> " + part.physicalSignificance
-					+ " in " + HighLogic.LoadedScene);
-				prevPhysicalSignificance = part.physicalSignificance;
 			}
 		}
 
@@ -321,6 +294,17 @@ namespace PrunePhysics
 
 #if DEBUG
 
+		[KSPEvent(
+			guiName = "Toggle PrunePhysics Globally",
+			guiActive = true,
+			guiActiveEditor = false
+		)]
+		public void TogglePrunePhysicsEnabled()
+		{
+			PrunePhysicsEnabled = !PrunePhysicsEnabled;
+			UpdateTogglePrunePhysicsEnabledGui();
+		}
+
 		[KSPEvent(guiActive = true, guiActiveEditor = false)]
 		public void ReplaceAttachJoint()
 		{
@@ -343,16 +327,6 @@ namespace PrunePhysics
 		{
 			whiteList = null;
 			loadWhiteList();
-		}
-
-		[KSPEvent(
-			guiName = "Toggle PrunePhysics Globally",
-			guiActive = true,
-			guiActiveEditor = false
-		)]
-		public void TogglePrunePhysicsEnabled()
-		{
-			PrunePhysicsEnabled = !PrunePhysicsEnabled;
 		}
 
 		[KSPEvent(guiActive = true, guiActiveEditor = true)]
@@ -404,11 +378,13 @@ namespace PrunePhysics
 						for (int i = 0; i < pj.Length; i++)
 							log("JOINT " + desc(pj[i]));
 
-						Component[] mb = part.gameObject.GetComponents<Component>();
+						MonoBehaviour[] mb = part.gameObject.GetComponents<MonoBehaviour>();
 						for (int i = 0; i < mb.Length; i++) {
-							if (!mb[i] || mb[i] is PartModule)
+							if (!mb[i])
 								continue;
-							log("COMP [" + i + "] " + mb[i].GetInstanceID()
+							log((mb[i] is PartModule ? "MOD" : "MBH")
+								+ (mb[i].enabled ? ":E" : ":D")
+								+ "[" + i + "] " + mb[i].GetInstanceID()
 								+ " " + desc(mb[i].GetType()));
 						}
 					} else {
@@ -420,6 +396,7 @@ namespace PrunePhysics
 			} catch (Exception e) {
 				log("EXCEPTION " + e.StackTrace);
 			}
+
 			log(sep + " " + desc(part) + " END " + sep);
 		}
 

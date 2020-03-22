@@ -294,10 +294,15 @@ namespace PrunePhysics
 
 #if DEBUG
 
+		const string DEBUGGROUP = "PrunePhysicsDebug";
+
 		[KSPEvent(
 			guiName = "Toggle PrunePhysics Globally",
 			guiActive = true,
-			guiActiveEditor = false
+			guiActiveEditor = false,
+			groupName = DEBUGGROUP,
+			groupDisplayName = DEBUGGROUP,
+			groupStartCollapsed = true
 		)]
 		public void TogglePrunePhysicsEnabled()
 		{
@@ -305,7 +310,13 @@ namespace PrunePhysics
 			UpdateTogglePrunePhysicsEnabledGui();
 		}
 
-		[KSPEvent(guiActive = true, guiActiveEditor = false)]
+		[KSPEvent(
+			guiActive = true,
+			guiActiveEditor = false,
+			groupName = DEBUGGROUP,
+			groupDisplayName = DEBUGGROUP,
+			groupStartCollapsed = true
+		)]
 		public void ReplaceAttachJoint()
 		{
 			Part p = part;
@@ -322,14 +333,26 @@ namespace PrunePhysics
 			log("new attachJoint: " + desc(p.attachJoint));
 		}
 
-		[KSPEvent(guiActive = true, guiActiveEditor = false)]
+		[KSPEvent(
+			guiActive = true,
+			guiActiveEditor = false,
+			groupName = DEBUGGROUP,
+			groupDisplayName = DEBUGGROUP,
+			groupStartCollapsed = true
+		)]
 		public void ResetWhiteList()
 		{
 			whiteList = null;
 			loadWhiteList();
 		}
 
-		[KSPEvent(guiActive = true, guiActiveEditor = true)]
+		[KSPEvent(
+			guiActive = true,
+			guiActiveEditor = true,
+			groupName = DEBUGGROUP,
+			groupDisplayName = DEBUGGROUP,
+			groupStartCollapsed = true
+		)]
 		public void ToggleShowAutostruts()
 		{
 			PhysicsGlobals.AutoStrutDisplay = !PhysicsGlobals.AutoStrutDisplay;
@@ -337,7 +360,13 @@ namespace PrunePhysics
 				GameEvents.onEditorPartEvent.Fire(ConstructionEventType.PartTweaked, part);
 		}
 
-		[KSPEvent(guiActive = true, guiActiveEditor = true)]
+		[KSPEvent(
+			guiActive = true,
+			guiActiveEditor = true,
+			groupName = DEBUGGROUP,
+			groupDisplayName = DEBUGGROUP,
+			groupStartCollapsed = true
+		)]
 		public void DumpPartPhysics()
 		{
 			string sep = new string('-', 16);
@@ -400,7 +429,13 @@ namespace PrunePhysics
 			log(sep + " " + desc(part) + " END " + sep);
 		}
 
-		[KSPEvent(guiActive = true, guiActiveEditor = true)]
+		[KSPEvent(
+			guiActive = true,
+			guiActiveEditor = true,
+			groupName = DEBUGGROUP,
+			groupDisplayName = DEBUGGROUP,
+			groupStartCollapsed = true
+		)]
 		public void DumpPhysicsStats()
 		{
 			string sep = new string('-', 16);
@@ -475,7 +510,13 @@ namespace PrunePhysics
 			}
 		}
 
-		[KSPEvent(guiActive = true, guiActiveEditor = false)]
+		[KSPEvent(
+			guiActive = true,
+			guiActiveEditor = false,
+			groupName = DEBUGGROUP,
+			groupDisplayName = DEBUGGROUP,
+			groupStartCollapsed = true
+		)]
 		public void CycleAllAutoStrut()
 		{
 			log("CycleAllAutoStrut()");

@@ -222,14 +222,14 @@ namespace PrunePhysics
 			if (PrunePhysicsField != null)
 				PrunePhysicsField.guiActive = PrunePhysicsField.guiActiveEditor = cpp;
 
-			if (PrunePhysics) {
-				if (PrunePhysics && HighLogic.LoadedSceneIsFlight && cpp) {
+			if (HighLogic.LoadedSceneIsFlight) {
+				if (PrunePhysics && cpp) {
 					log(desc(part) + ": PRUNING PHYSICS FROM ORIG=" + PhysicsSignificanceOrig
 						+ " CUR=" + part.PhysicsSignificance);
 					part.PhysicsSignificance = 1;
+				} else {
+					part.PhysicsSignificance = PhysicsSignificanceOrig;
 				}
-			} else {
-				part.PhysicsSignificance = PhysicsSignificanceOrig;
 			}
 		}
 
@@ -267,7 +267,6 @@ namespace PrunePhysics
 		private void AfterPrunePhysicsChange() {
 			log(desc(part) + ".PrunePhysics is now " + PrunePhysics);
 			int newPhysicsSignificance = PrunePhysics ? 1 : 0;
-			changePhysics(part, newPhysicsSignificance);
 			List<Part> scp = part.symmetryCounterparts;
 			if (scp == null)
 				return;
@@ -278,17 +277,6 @@ namespace PrunePhysics
 				ModulePrunePhysics mpp = p.FindModuleImplementing<ModulePrunePhysics>();
 				if (mpp)
 					mpp.PrunePhysics = PrunePhysics;
-			}
-		}
-
-		private static void changePhysics(Part p, int newPhysicsSignificance)
-		{
-			log(desc(p) + ".changePhysics(" + newPhysicsSignificance + ")");
-			if (!p || !p.parent)
-				return;
-			if (newPhysicsSignificance != p.PhysicsSignificance) {
-				log(desc(p) + ".PhysicsSignificance " + p.PhysicsSignificance + " -> " + newPhysicsSignificance);
-				p.PhysicsSignificance = newPhysicsSignificance;
 			}
 		}
 
@@ -362,7 +350,7 @@ namespace PrunePhysics
 
 		[KSPEvent(
 			guiActive = true,
-			guiActiveEditor = true,
+			guiActiveEditor = false,
 			groupName = DEBUGGROUP,
 			groupDisplayName = DEBUGGROUP,
 			groupStartCollapsed = true
@@ -431,7 +419,7 @@ namespace PrunePhysics
 
 		[KSPEvent(
 			guiActive = true,
-			guiActiveEditor = true,
+			guiActiveEditor = false,
 			groupName = DEBUGGROUP,
 			groupDisplayName = DEBUGGROUP,
 			groupStartCollapsed = true

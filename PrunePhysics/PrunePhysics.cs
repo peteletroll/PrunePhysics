@@ -173,6 +173,8 @@ namespace PrunePhysics
 			string failMsg = "";
 			if (!part) {
 				failMsg = "no part";
+			} else if (part.partInfo == null || part.partInfo.partConfig == null) {
+				failMsg = "no partConfig";
 			} else if (!PrunePhysicsEnabled) {
 				failMsg = "disabled globally";
 			} else if (part.sameVesselCollision) {
@@ -204,8 +206,9 @@ namespace PrunePhysics
 			enabled = false;
 			checkRevision();
 
-			if (!part.partInfo.partConfig.TryGetValue("PhysicsSignificance", ref PhysicsSignificanceOrig))
-				PhysicsSignificanceOrig = PhysicsSignificanceDefault;
+			if (part && part.partInfo != null && part.partInfo.partConfig != null)
+				if (!part.partInfo.partConfig.TryGetValue("PhysicsSignificance", ref PhysicsSignificanceOrig))
+					PhysicsSignificanceOrig = PhysicsSignificanceDefault;
 
 			if (PhysicsSignificanceOrig <= 0 && part.PhysicsSignificance > 0)
 				PrunePhysics = true;

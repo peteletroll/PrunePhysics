@@ -160,11 +160,10 @@ namespace PrunePhysics
 		[KSPField(isPersistant = true)]
 		public int PhysicsSignificanceOrig = PhysicsSignificanceDefault;
 
-		[UI_Toggle()]
+		[UI_Toggle(affectSymCounterparts = UI_Scene.All)]
 		[KSPField(guiName = "PrunePhysics", isPersistant = true, guiActive = true, guiActiveEditor = true)]
 		public bool PrunePhysics = false;
 		private BaseField PrunePhysicsField = null;
-		private bool prevPrunePhysics = false;
 
 		private Part.PhysicalSignificance prevPhysicalSignificance = Part.PhysicalSignificance.FULL;
 
@@ -214,7 +213,6 @@ namespace PrunePhysics
 				PrunePhysics = true;
 
 			prevPhysicalSignificance = part.physicalSignificance;
-			prevPrunePhysics = PrunePhysics;
 
 			PrunePhysicsField = Fields[nameof(PrunePhysics)];
 
@@ -259,27 +257,6 @@ namespace PrunePhysics
 					PrunePhysicsField.guiName = newGuiName;
 					MonoUtilities.RefreshContextWindows(part);
 				}
-			}
-
-			if (PrunePhysics != prevPrunePhysics) {
-				prevPrunePhysics = PrunePhysics;
-				AfterPrunePhysicsChange();
-			}
-		}
-
-		private void AfterPrunePhysicsChange() {
-			log(desc(part) + ".PrunePhysics is now " + PrunePhysics);
-			int newPhysicsSignificance = PrunePhysics ? 1 : 0;
-			List<Part> scp = part.symmetryCounterparts;
-			if (scp == null)
-				return;
-			for (int i = 0; i < scp.Count; i++) {
-				Part p = scp[i];
-				if (p == part)
-					continue;
-				ModulePrunePhysics mpp = p.FindModuleImplementing<ModulePrunePhysics>();
-				if (mpp)
-					mpp.PrunePhysics = PrunePhysics;
 			}
 		}
 

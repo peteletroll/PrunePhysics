@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Text;
 using System.Text.RegularExpressions;
+using KSP.UI.Screens.DebugToolbar;
 
 namespace PrunePhysics
 {
@@ -199,11 +200,68 @@ namespace PrunePhysics
 			return true;
 		}
 
+		private static char[] commandSeparators = { ' ', '\t' };
+
+		public static void consoleCommand(string arg)
+		{
+			string[] args = arg.Split(commandSeparators, StringSplitOptions.RemoveEmptyEntries);
+			log("CMD START");
+			for (int i = 0; i < args.Length; i++)
+				log("CMD[" + i + "] '" + args[i] + "'");
+			Vessel v = FlightGlobals.ActiveVessel;
+			if (!HighLogic.LoadedSceneIsFlight) {
+				log("not in flight mode");
+			} else if (!v) {
+				log("no active vessel");
+			} else if (args.Length == 2 && args[0] == "enable") {
+				setEnabled(v, args[1], true);
+			} else if (args.Length == 2 && args[0] == "disable") {
+				setEnabled(v, args[1], false);
+			} else {
+				log("illegal command");
+			}
+			log("CMD END");
+		}
+
+		private static void setEnabled(Vessel v, string type, bool enabled)
+		{
+			MonoBehaviour[] mbs = allBehaviours(v, type);
+			log("found " + mbs.Length + " " + type);
+			int changed = 0;
+			for (int i = 0; i < mbs.Length; i++) {
+				if (mbs[i].enabled != enabled) {
+					changed++;
+					mbs[i].enabled = enabled;
+				}
+			}
+			log("changed " + changed + " " + type);
+		}
+
+		private static MonoBehaviour[] allBehaviours(Vessel v, string type)
+		{
+			List<MonoBehaviour> ret = new List<MonoBehaviour>();
+			for (int i = 0; i < v.parts.Count; i++) {
+				Part p = v.parts[i];
+				MonoBehaviour[] mbs = p.gameObject.GetComponents<MonoBehaviour>();
+				for (int j = 0; j < mbs.Length; j++)
+					if (mbs[j].GetType().ToString() == type)
+						ret.Add(mbs[j]);
+			}
+			return ret.ToArray();
+		}
+
+		private static bool consoleSetupDone = false;
+
 		public override void OnStart(StartState state)
 		{
 			base.OnStart(state);
 			enabled = false;
 			checkRevision();
+
+			if (!consoleSetupDone) {
+				consoleSetupDone = true;
+				DebugScreenConsole.AddConsoleCommand("pp", consoleCommand, "PrunePhysics commands");
+			}
 
 			if (part && part.partInfo != null && part.partInfo.partConfig != null)
 				if (!part.partInfo.partConfig.TryGetValue("PhysicsSignificance", ref PhysicsSignificanceOrig))
@@ -234,6 +292,11 @@ namespace PrunePhysics
 			}
 		}
 
+		private void FixedUpdate()
+		{
+			// this exists just to test GetMethod(), enabled is always false
+		}
+
 		public override void OnUpdate()
 		{
 			base.OnUpdate();
@@ -261,6 +324,31 @@ namespace PrunePhysics
 		}
 
 #if DEBUG
+
+		public class Stat
+		{
+			private Dictionary<string, int> s = new Dictionary<string, int>();
+
+			public void inc(string k, int i = 1)
+			{
+				if (s.ContainsKey(k)) {
+					s[k] += i;
+				} else {
+					s[k] = i;
+				}
+			}
+
+			public void dump()
+			{
+				List<string> l = new List<string>();
+				foreach (KeyValuePair<string, int> i in s)
+					l.Add(i.Value.ToString("D4") + " " + i.Key);
+				l.Sort();
+				for (int i = 0; i < l.Count; i++) {
+					log(l[i]);
+				}
+			}
+		}
 
 		const string DEBUGGROUP = "PrunePhysicsDebug";
 
@@ -469,12 +557,64 @@ namespace PrunePhysics
 			log(sep + " " + desc(part) + " END " + sep);
 		}
 
-		private static void incStat(Dictionary<string, int> d, string k, int i = 1)
+		[KSPEvent(
+			guiActive = true,
+			guiActiveEditor = false,
+			groupName = DEBUGGROUP,
+			groupDisplayName = DEBUGGROUP,
+			groupStartCollapsed = true
+		)]
+		public void DumpMonoBehaviourStats()
 		{
-			if (d.ContainsKey(k)) {
-				d[k] += i;
+			string sep = new string('-', 16);
+			log(sep + " " + vessel.name + " BEGIN " + sep);
+			try {
+				if (!vessel) {
+					log("no vessel");
+				} else if (vessel.parts == null) {
+					log("no vessel.parts");
+				} else {
+					BindingFlags f = BindingFlags.NonPublic | BindingFlags.Instance;
+					Type[] noParams = new Type[0];
+
+					Part[] pp = vessel.parts.ToArray();
+					Stat ts = new Stat();
+					Stat ms = new Stat();
+					for (int i = 0; i < pp.Length; i++) {
+						Part p = pp[i];
+						if (!p || !p.gameObject)
+							continue;
+
+						MonoBehaviour[] mbs = p.gameObject.GetComponents<MonoBehaviour>();
+						for (int j = 0; j < mbs.Length; j++) {
+							MonoBehaviour mb = mbs[j];
+							Type t = mb.GetType();
+							string q = "{"
+								+ (mb.enabled ? "E" : "D")
+								+ (t.GetMethod("Update", f) == null ? ":U" : "")
+								+ (t.GetMethod("FixedUpdate", f) == null ? ":FU" : "")
+								+ "}";
+							ts.inc("total");
+							ts.inc("total " + q);
+							ms.inc(t + " " + q);
+						}
+					}
+
+					ms.dump();
+					ts.dump();
+				}
+			} catch (Exception e) {
+				log("EXCEPTION " + e.StackTrace);
+			}
+			log(sep + " " + vessel.name + " END " + sep);
+		}
+
+		private static void incStat(Dictionary<string, int> s, string k, int i = 1)
+		{
+			if (s.ContainsKey(k)) {
+				s[k] += i;
 			} else {
-				d[k] = i;
+				s[k] = i;
 			}
 		}
 

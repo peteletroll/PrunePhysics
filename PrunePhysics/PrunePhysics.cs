@@ -74,25 +74,31 @@ namespace PrunePhysics
 					if (ll == null || ll.Length <= 0)
 						continue;
 					string l = ll[0].Trim();
-					if (l == "")
-						continue;
-					if (l[0] != '^')
-						l = "^" + l;
-					if (l[l.Length - 1] != '$')
-						l = l + "$";
-					log("REGEX " + l);
-					Regex re = null;
-					try {
-						re = new Regex(l);
-					} catch (Exception e) {
-						log(url + "[" + (i + 1) + "]: " + e.Message);
-					}
+					Regex re = makeRegex(l);
 					if (re == null)
 						continue;
 					wl.Add(re);
 				}
 			}
 			whiteList = wl.ToArray();
+		}
+
+		private static Regex makeRegex(string re)
+		{
+			Regex ret = null;
+			if (re.Length <= 0)
+				return null;
+			if (re[0] != '^')
+				re = "^" + re;
+			if (re[re.Length - 1] != '$')
+				re = re + "$";
+			log("REGEX " + re);
+			try {
+				ret = new Regex(re);
+			} catch (Exception e) {
+				log(re + ": " + e.Message);
+			}
+			return ret;
 		}
 
 		private bool checkWhiteList()
@@ -226,6 +232,8 @@ namespace PrunePhysics
 		private static void setEnabled(Vessel v, string type, bool enabled)
 		{
 			MonoBehaviour[] mbs = allBehaviours(v, type);
+			if (mbs == null)
+				return;
 			log("found " + mbs.Length + " " + type);
 			int changed = 0;
 			for (int i = 0; i < mbs.Length; i++) {
@@ -239,13 +247,24 @@ namespace PrunePhysics
 
 		private static MonoBehaviour[] allBehaviours(Vessel v, string type)
 		{
+			Regex re = makeRegex(type);
+			if (re == null)
+				return null;
 			List<MonoBehaviour> ret = new List<MonoBehaviour>();
+			Dictionary<string, int> found = new Dictionary<string, int>();
 			for (int i = 0; i < v.parts.Count; i++) {
 				Part p = v.parts[i];
 				MonoBehaviour[] mbs = p.gameObject.GetComponents<MonoBehaviour>();
-				for (int j = 0; j < mbs.Length; j++)
-					if (mbs[j].GetType().ToString() == type)
+				for (int j = 0; j < mbs.Length; j++) {
+					string t = mbs[j].GetType().ToString();
+					if (re.IsMatch(t)) {
+						if (!found.ContainsKey(t)) {
+							log("found " + t);
+							found.Add(t, 0);
+						}
 						ret.Add(mbs[j]);
+					}
+				}
 			}
 			return ret.ToArray();
 		}

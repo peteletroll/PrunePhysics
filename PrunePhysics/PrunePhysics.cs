@@ -74,7 +74,7 @@ namespace PrunePhysics
 					if (ll == null || ll.Length <= 0)
 						continue;
 					string l = ll[0].Trim();
-					Regex re = makeRegex(l);
+					Regex re = makeRegex(l, true);
 					if (re == null)
 						continue;
 					wl.Add(re);
@@ -83,16 +83,18 @@ namespace PrunePhysics
 			whiteList = wl.ToArray();
 		}
 
-		private static Regex makeRegex(string re)
+		private static Regex makeRegex(string re, bool anchor)
 		{
 			Regex ret = null;
 			if (re.Length <= 0)
 				return null;
-			if (re[0] != '^')
-				re = "^" + re;
-			if (re[re.Length - 1] != '$')
-				re = re + "$";
-			log("REGEX " + re);
+			if (anchor) {
+				if (re[0] != '^')
+					re = "^" + re;
+				if (re[re.Length - 1] != '$')
+					re = re + "$";
+			}
+			// log("REGEX " + re);
 			try {
 				ret = new Regex(re);
 			} catch (Exception e) {
@@ -211,9 +213,11 @@ namespace PrunePhysics
 		public static void consoleCommand(string arg)
 		{
 			string[] args = arg.Split(commandSeparators, StringSplitOptions.RemoveEmptyEntries);
-			log("CMD START");
+			// log("CMD START");
+			/*
 			for (int i = 0; i < args.Length; i++)
 				log("CMD[" + i + "] '" + args[i] + "'");
+			*/
 			Vessel v = FlightGlobals.ActiveVessel;
 			if (!HighLogic.LoadedSceneIsFlight) {
 				log("not in flight mode");
@@ -226,7 +230,7 @@ namespace PrunePhysics
 			} else {
 				log("illegal command");
 			}
-			log("CMD END");
+			// log("CMD END");
 		}
 
 		private static void setEnabled(Vessel v, string type, bool enabled)
@@ -247,7 +251,7 @@ namespace PrunePhysics
 
 		private static MonoBehaviour[] allBehaviours(Vessel v, string type)
 		{
-			Regex re = makeRegex(type);
+			Regex re = makeRegex(type, false);
 			if (re == null)
 				return null;
 			List<MonoBehaviour> ret = new List<MonoBehaviour>();

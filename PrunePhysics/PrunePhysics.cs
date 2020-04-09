@@ -586,7 +586,8 @@ namespace PrunePhysics
 		public void DumpMonoBehaviourStats()
 		{
 			string sep = new string('-', 16);
-			log(sep + " " + vessel.name + " BEGIN " + sep);
+			string title = vessel.vesselName + " [" + vessel.parts.Count + "]";
+			log(sep + " " + title + " BEGIN " + sep);
 			try {
 				if (!vessel) {
 					log("no vessel");
@@ -598,7 +599,8 @@ namespace PrunePhysics
 
 					Part[] pp = vessel.parts.ToArray();
 					Stat ts = new Stat();
-					Stat ms = new Stat();
+					Stat es = new Stat();
+					Stat ds = new Stat();
 					for (int i = 0; i < pp.Length; i++) {
 						Part p = pp[i];
 						if (!p || !p.gameObject)
@@ -615,17 +617,22 @@ namespace PrunePhysics
 								+ "}";
 							ts.inc("total");
 							ts.inc("total " + q);
-							ms.inc(t + " " + q);
+							if (mb.enabled) {
+								es.inc(t + " " + q);
+							} else {
+								ds.inc(t + " " + q);
+							}
 						}
 					}
 
-					ms.dump();
+					ds.dump();
+					es.dump();
 					ts.dump();
 				}
 			} catch (Exception e) {
 				log("EXCEPTION " + e.StackTrace);
 			}
-			log(sep + " " + vessel.name + " END " + sep);
+			log(sep + " " + title + " END " + sep);
 		}
 
 		private static void incStat(Dictionary<string, int> s, string k, int i = 1)

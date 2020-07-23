@@ -244,6 +244,7 @@ namespace PrunePhysics
 				if (mbs[i].enabled != enabled) {
 					changed++;
 					mbs[i].enabled = enabled;
+
 				}
 			}
 			log("changed " + changed + " " + type);
@@ -456,6 +457,10 @@ namespace PrunePhysics
 					log("PHYSICS " + part.physicalSignificance + " " + part.PhysicsSignificance);
 					log("PARENT " + desc(part.parent, true));
 					log("ATTACH " + desc(part.attachJoint));
+					log("ORG " + part.orgPos.ToString("F3") + " " + part.orgRot.ToString("F3"));
+					log("POS " + part.vessel.rootPart.transform.InverseTransformPoint(part.transform.TransformPoint(Vector3.zero)).ToString("F3")
+						+ " " +
+						(Quaternion.Inverse(part.vessel.rootPart.transform.rotation) * part.transform.rotation).ToString("F3"));
 
 					if (part.children != null) {
 						for (int i = 0; i < part.children.Count; i++)

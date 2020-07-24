@@ -447,6 +447,26 @@ namespace PrunePhysics
 			groupDisplayName = DEBUGGROUP,
 			groupStartCollapsed = true
 		)]
+		public void DumpPartPosition()
+		{
+			string sep = new string('-', 16);
+			log(sep + " " + desc(part, true) + " BEGIN " + sep);
+			string posFmt = "F6";
+			log("ORG " + part.orgPos.ToString(posFmt) + " " + part.orgRot.ToString(posFmt));
+			log("POS "
+				+ part.vessel.rootPart.transform.InverseTransformPoint(part.transform.TransformPoint(Vector3.zero)).ToString(posFmt)
+				+ " " +
+				(Quaternion.Inverse(part.vessel.rootPart.transform.rotation) * part.transform.rotation).ToString(posFmt));
+			log(sep + " " + desc(part, true) + " END " + sep);
+		}
+
+		[KSPEvent(
+			guiActive = true,
+			guiActiveEditor = false,
+			groupName = DEBUGGROUP,
+			groupDisplayName = DEBUGGROUP,
+			groupStartCollapsed = true
+		)]
 		public void DumpPartPhysics()
 		{
 			string sep = new string('-', 16);
@@ -457,10 +477,6 @@ namespace PrunePhysics
 					log("PHYSICS " + part.physicalSignificance + " " + part.PhysicsSignificance);
 					log("PARENT " + desc(part.parent, true));
 					log("ATTACH " + desc(part.attachJoint));
-					log("ORG " + part.orgPos.ToString("F3") + " " + part.orgRot.ToString("F3"));
-					log("POS " + part.vessel.rootPart.transform.InverseTransformPoint(part.transform.TransformPoint(Vector3.zero)).ToString("F3")
-						+ " " +
-						(Quaternion.Inverse(part.vessel.rootPart.transform.rotation) * part.transform.rotation).ToString("F3"));
 
 					if (part.children != null) {
 						for (int i = 0; i < part.children.Count; i++)
